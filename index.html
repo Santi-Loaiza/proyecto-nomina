@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Nómina con Matrices Paralelas — ITM 2026-2</title>
+  <style>
+/* ============================================================================
+ * styles.css — Sistema de Nómina con Matrices Paralelas
+ * ========================================================================== */
+:root {
+  --navy: #0f172a;
+  --navy-2: #1e293b;
+  --accent: #2563eb;
+  --accent-soft: #dbeafe;
+  --violet: #7c3aed;
+  --violet-soft: #ede9fe;
+  --green: #15803d;
+  --green-soft: #dcfce7;
+  --red: #b91c1c;
+  --red-soft: #fee2e2;
+  --amber: #b45309;
+  --amber-soft: #fef3c7;
+  --bg: #f1f5f9;
+  --card: #ffffff;
+  --border: #e2e8f0;
+  --text: #1e293b;
+  --muted: #64748b;
+  --radius: 12px;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.45;
+}
+code { font-family: 'Consolas', 'Courier New', monospace; font-size: .88em; background: #e8edf5; padding: 1px 6px; border-radius: 4px; }
+[hidden] { display: none !important; }
+
+/* ---------- Estructura ---------- */
+.app { display: grid; grid-template-columns: 270px 1fr; min-height: 100vh; }
+.sidebar {
+  background: var(--navy);
+  color: #cbd5e1;
+  padding: 20px 14px;
+  position: sticky; top: 0; height: 100vh;
+  display: flex; flex-direction: column; gap: 14px;
+  overflow-y: auto;
+}
+.main { padding: 28px 32px 48px; min-width: 0; }
+
+.brand { display: flex; gap: 12px; align-items: center; padding: 0 6px 14px; border-bottom: 1px solid #243047; }
+.brand strong { color: #fff; display: block; font-size: 1rem; }
+.brand small { color: #94a3b8; font-size: .75rem; }
+.brand-mark { width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, var(--accent), var(--violet)); color: #fff; font-weight: 700; display: grid; place-items: center; font-size: 1.1rem; }
+
+.nav-btn {
+  width: 100%; display: flex; align-items: center; gap: 12px;
+  background: transparent; border: 0; color: inherit; text-align: left;
+  padding: 10px 10px; border-radius: 8px; font: inherit; font-size: .92rem; cursor: pointer;
+}
+.nav-btn .n { width: 26px; height: 26px; flex: none; border-radius: 7px; background: #1e293b; display: grid; place-items: center; font-size: .8rem; font-weight: 600; color: #93c5fd; }
+.nav-btn:hover { background: #1a2540; color: #fff; }
+.nav-btn:focus-visible { outline: 2px solid #60a5fa; outline-offset: 1px; }
+.nav-btn.activo { background: var(--accent); color: #fff; }
+.nav-btn.activo .n { background: rgba(255,255,255,.2); color: #fff; }
+.nav-btn.salir .n { color: #fca5a5; }
+.nav-sep { font-size: .68rem; text-transform: uppercase; letter-spacing: .08em; color: #64748b; padding: 12px 10px 4px; min-height: 8px; }
+
+.sidebar-foot { margin-top: auto; }
+.estado-mini { display: block; font-size: .8rem; padding: 8px 10px; border-radius: 8px; background: #1e293b; }
+.estado-mini.con-datos { color: #86efac; }
+.estado-mini.sin-datos { color: #fcd34d; }
+
+/* ---------- Encabezados ---------- */
+.sec-head { margin-bottom: 18px; }
+.sec-head h1 { margin: 0 0 4px; font-size: 1.55rem; color: var(--navy); }
+.sec-head p { margin: 0; color: var(--muted); max-width: 70ch; }
+
+/* ---------- Tarjetas y rejillas ---------- */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 18px; box-shadow: 0 1px 2px rgba(15,23,42,.04); }
+.card h3 { margin: 0 0 12px; font-size: 1.02rem; }
+.grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin-bottom: 18px; }
+.grid-4 .card { margin-bottom: 0; }
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.centrado { text-align: center; padding: 32px; }
+.nota { color: var(--muted); font-size: .88rem; margin: 10px 0; }
+
+.archivo { display: flex; flex-direction: column; gap: 6px; }
+.archivo-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.archivo .dim { font-size: 1.5rem; font-weight: 700; color: var(--navy); }
+.archivo small { color: var(--muted); }
+
+.badge { font-size: .72rem; font-weight: 600; padding: 3px 9px; border-radius: 999px; }
+.badge.verde { background: var(--green-soft); color: var(--green); }
+.badge.rojo { background: var(--red-soft); color: var(--red); }
+.badge.gris { background: #e2e8f0; color: var(--muted); }
+
+.kpi small { color: var(--muted); display: block; margin-bottom: 4px; }
+.kpi strong { font-size: 1.25rem; color: var(--navy); }
+.kpi.verde { border-top: 3px solid var(--green); }
+.kpi.morado { border-top: 3px solid var(--violet); }
+.kpi:not(.verde):not(.morado) { border-top: 3px solid var(--accent); }
+
+/* ---------- Botones y formularios ---------- */
+.acciones { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: 8px; font: inherit; font-weight: 600; font-size: .92rem; cursor: pointer; border: 1px solid transparent; }
+.btn.primario { background: var(--accent); color: #fff; }
+.btn.primario:hover { background: #1d4ed8; }
+.btn.primario code { background: rgba(255,255,255,.2); color: #fff; }
+.btn.secundario { background: #fff; border-color: #cbd5e1; color: var(--navy); }
+.btn.secundario:hover { background: #f8fafc; }
+.btn.peligro { background: var(--red); color: #fff; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+input[type=text], input[type=number], select {
+  padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font: inherit; background: #fff; color: var(--text);
+}
+input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+
+.consulta { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+.consulta input { flex: 1 1 260px; max-width: 360px; }
+
+
+.fila-selector { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.fila-selector select { min-width: 280px; max-width: 100%; }
+
+/* ---------- Mensajes ---------- */
+.mensajes { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.msg { padding: 10px 14px; border-radius: 8px; font-size: .92rem; border-left: 4px solid; }
+.msg.ok { background: var(--green-soft); border-color: var(--green); color: #14532d; }
+.msg.error { background: var(--red-soft); border-color: var(--red); color: #7f1d1d; }
+.msg.warn { background: var(--amber-soft); border-color: var(--amber); color: #78350f; }
+
+/* ---------- Tablas ---------- */
+.tabla-wrap { overflow-x: auto; padding: 0; }
+.tabla-wrap.alto { max-height: 460px; overflow-y: auto; }
+.card.tabla-wrap { padding: 4px 6px 8px; }
+.tabla { width: 100%; border-collapse: collapse; font-size: .88rem; }
+.tabla th { position: sticky; top: 0; background: #f8fafc; text-align: left; padding: 10px 10px; color: var(--muted); font-size: .78rem; text-transform: uppercase; letter-spacing: .03em; border-bottom: 2px solid var(--border); white-space: nowrap; }
+.tabla td { padding: 8px 10px; border-bottom: 1px solid #eef2f7; white-space: nowrap; }
+.tabla .num { text-align: right; font-variant-numeric: tabular-nums; }
+.tabla .c { text-align: center; }
+.tabla tbody tr:hover { background: #f8fafc; }
+.tabla tr.click { cursor: pointer; }
+.tabla tr.click:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.tabla tfoot td { font-weight: 700; background: #f1f5f9; border-top: 2px solid var(--border); }
+.tabla.compacta td, .tabla.compacta th { padding: 5px 10px; }
+.ok-txt { color: var(--green); font-weight: 700; }
+.dif-txt { color: var(--amber); font-weight: 700; }
+
+.mini-matriz h4 { margin: 0 0 6px; font-size: .9rem; color: var(--navy); font-family: Consolas, monospace; }
+
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.tab { background: #f1f5f9; border: 1px solid var(--border); padding: 8px 14px; border-radius: 8px; font: inherit; font-size: .88rem; cursor: pointer; }
+.tab small { color: var(--muted); font-family: Consolas, monospace; }
+.tab.activo { background: var(--navy); color: #fff; border-color: var(--navy); }
+.tab.activo small { color: #93c5fd; }
+
+.horas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.hora-campo { display: flex; flex-direction: column; gap: 4px; border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; background: #f8fafc; }
+.hora-campo.cambiada { border-color: var(--amber); background: var(--amber-soft); }
+.hora-campo strong { font-size: .88rem; color: var(--navy); }
+.hora-campo small { font-size: .76rem; color: var(--muted); }
+.hora-campo input { width: 100%; font-size: 1.1rem; font-weight: 700; }
+.hora-campo output { font-size: .8rem; font-family: Consolas, monospace; color: var(--green); font-weight: 700; }
+.paso-num { display: inline-grid; place-items: center; width: 26px; height: 26px; margin-right: 8px; border-radius: 50%; background: var(--accent); color: #fff; font-size: .85rem; }
+.sim-titulo { margin: 18px 0 8px; font-size: .95rem; color: var(--navy); }
+.sim-titulo small { font-weight: 400; color: var(--muted); }
+.sim-datos { margin: 0 0 6px; font-size: .92rem; }
+.kpi em { display: block; margin-top: 4px; font-style: normal; font-size: .82rem; font-weight: 700; }
+.kpi em.sube { color: var(--green); }
+.kpi em.baja { color: var(--red); }
+.kpi em.igual { color: var(--muted); font-weight: 400; }
+.tabla tr.grupo td { background: var(--accent-soft); color: var(--navy); font-weight: 700; font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; }
+.tabla tr.destacado td { font-weight: 700; background: #f8fafc; }
+
+/* ---------- Colillas ---------- */
+.colilla { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 22px 26px; max-width: 760px; box-shadow: 0 4px 10px rgba(15,23,42,.06); }
+.colilla.trabajador { border-top: 5px solid var(--accent); }
+.colilla.empleador { border-top: 5px solid var(--violet); }
+.colilla h2 { margin: 0 0 12px; font-size: 1.05rem; letter-spacing: .03em; text-align: center; color: var(--navy); }
+.colilla h4 { margin: 18px 0 6px; font-size: .85rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.colilla .datos { display: flex; flex-wrap: wrap; gap: 6px 22px; padding: 10px 0; border-top: 1px dashed #cbd5e1; border-bottom: 1px dashed #cbd5e1; font-size: .92rem; }
+.colilla .datos .ancho { flex-basis: 100%; }
+.tabla-colilla { width: 100%; border-collapse: collapse; font-size: .93rem; }
+.tabla-colilla td { padding: 6px 2px; border-bottom: 1px solid #f1f5f9; }
+.tabla-colilla td.num { text-align: right; font-family: Consolas, monospace; }
+.tabla-colilla small { color: var(--muted); }
+.tabla-colilla tr.total td { font-weight: 700; border-top: 1px solid #94a3b8; border-bottom: 0; }
+.gran-total { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; padding: 14px 16px; border-radius: 10px; font-size: 1.05rem; }
+.gran-total strong { font-size: 1.3rem; font-family: Consolas, monospace; }
+.gran-total.verde { background: var(--green-soft); color: #14532d; }
+.gran-total.morado { background: var(--violet-soft); color: #4c1d95; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { position: static; height: auto; flex-direction: column; }
+  #menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 4px; }
+  .nav-sep { grid-column: 1 / -1; }
+  .main { padding: 20px 14px 40px; }
+}
+
+/* ---------- Impresión: solo la colilla ---------- */
+@media print {
+  .no-print, .sidebar { display: none !important; }
+  .app { display: block; }
+  body { background: #fff; }
+  .main { padding: 0; }
+  .colilla { box-shadow: none; max-width: none; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ================= MENÚ LATERAL (equivale a mostrarMenu() del .c) ================= -->
+  <aside class="sidebar no-print">
+    <div class="brand">
+      <span class="brand-mark">N</span>
+      <div>
+        <strong>Sistema de Nómina</strong>
+        <small>Matrices paralelas · 50 empleados</small>
+      </div>
+    </div>
+
+    <nav id="menu" aria-label="Menú principal">
+      <button class="nav-btn" data-sec="cargar"><span class="n">1</span>Cargar archivos .txt</button>
+      <button class="nav-btn" data-sec="consolidado"><span class="n">2</span>Reporte consolidado</button>
+      <button class="nav-btn" data-sec="trabajador"><span class="n">3</span>Colilla del trabajador</button>
+      <button class="nav-btn" data-sec="empleador"><span class="n">4</span>Costos del empleador</button>
+      <button class="nav-btn" data-sec="apellidos"><span class="n">5</span>Filtro 1 · Apellidos</button>
+      <button class="nav-btn" data-sec="salario"><span class="n">6</span>Filtro 2 · Salario</button>
+      <div class="nav-sep">Herramientas del proyecto</div>
+      <button class="nav-btn" data-sec="matrices"><span class="n">▦</span>Ver las 4 matrices</button>
+      <button class="nav-btn" data-sec="calculo"><span class="n">✓</span>Cálculo y validación</button>
+      <div class="nav-sep"></div>
+      <button class="nav-btn salir" data-sec="salir"><span class="n">7</span>Salir</button>
+    </nav>
+
+    <div class="sidebar-foot">
+      <span id="estadoMini" class="estado-mini sin-datos">Sin datos cargados</span>
+    </div>
+  </aside>
+
+  <!-- ================= CONTENIDO ================= -->
+  <main class="main">
+
+    <!-- ---------- 1. CARGAR ---------- -->
+    <section id="sec-cargar" class="seccion">
+      <header class="sec-head">
+        <h1>Cargar las 4 matrices</h1>
+        <p>Los datos provienen de cuatro archivos <code>.txt</code>. Cada archivo llena una matriz de 50 filas; la fila <em>i</em> de las cuatro matrices corresponde al mismo empleado.</p>
+      </header>
+
+      <div id="tarjetasArchivos" class="grid-4"></div>
+
+      <div class="card">
+        <h3>Carga de las matrices</h3>
+        <p class="nota">Los datos de los 50 empleados ya vienen incluidos en el programa (son los mismos de los cuatro archivos <code>.txt</code>). Este botón los pasa a las 4 matrices y confirma la carga.</p>
+        <div class="acciones">
+          <button id="btnCargar" class="btn primario">Cargar / recargar las 4 matrices</button>
+        </div>
+        <div id="mensajesCarga" class="mensajes" role="status"></div>
+      </div>
+    </section>
+
+    <!-- ---------- 2. CONSOLIDADO ---------- -->
+    <section id="sec-consolidado" class="seccion" hidden>
+      <header class="sec-head">
+        <h1>Reporte consolidado de nómina</h1>
+        <p>50 empleados. Haga clic en una fila para ver su colilla.</p>
+      </header>
+      <div id="kpis" class="grid-4"></div>
+      <div class="card tabla-wrap">
+        <table id="tablaConsolidado" class="tabla">
+          <thead>
+            <tr><th>N°</th><th>Cédula</th><th>Nombre completo</th><th class="num">Salario base</th><th class="num">Devengado bruto</th><th class="num">Deducciones</th><th class="num">Neto a pagar</th><th class="num">Costo empresa</th></tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot></tfoot>
+        </table>
+      </div>
+    </section>
+
+    <!-- ---------- 3. COLILLA TRABAJADOR ---------- -->
+    <section id="sec-trabajador" class="seccion" hidden>
+      <header class="sec-head no-print">
+        <h1>Desprendible de pago del trabajador</h1>
+        <p>Consulta por cédula (búsqueda lineal sobre <code>Matriz_ID[i][0]</code>).</p>
+      </header>
+      <form class="consulta no-print" data-destino="trabajador" autocomplete="off">
+        <input type="text" inputmode="numeric" list="listaCedulas" placeholder="Cédula, p. ej. 1000224906" aria-label="Cédula a consultar">
+        <button class="btn primario" type="submit">Consultar</button>
+        <button class="btn secundario" type="button" data-imprimir>Imprimir</button>
+      </form>
+      <div id="resTrabajador" class="resultado" role="status"></div>
+    </section>
+
+    <!-- ---------- 4. COLILLA EMPLEADOR ---------- -->
+    <section id="sec-empleador" class="seccion" hidden>
+      <header class="sec-head no-print">
+        <h1>Hoja de costos empresariales</h1>
+        <p>Aportes de seguridad social y parafiscales a cargo del empleador.</p>
+      </header>
+      <form class="consulta no-print" data-destino="empleador" autocomplete="off">
+        <input type="text" inputmode="numeric" list="listaCedulas" placeholder="Cédula, p. ej. 1000224906" aria-label="Cédula a consultar">
+        <button class="btn primario" type="submit">Consultar</button>
+        <button class="btn secundario" type="button" data-imprimir>Imprimir</button>
+      </form>
+      <div id="resEmpleador" class="resultado" role="status"></div>
+    </section>
+    <datalist id="listaCedulas"></datalist>
+
+    <!-- ---------- 5. FILTRO APELLIDOS ---------- -->
+    <section id="sec-apellidos" class="seccion" hidden>
+      <header class="sec-head">
+        <h1>Filtro 1 · Ordenado por apellidos</h1>
+        <p>Orden alfabético por primer apellido y, si empatan, por el segundo. Muestra apellidos, nombres y fecha de nacimiento.</p>
+      </header>
+      <div class="card tabla-wrap">
+        <table id="tablaApellidos" class="tabla">
+          <thead><tr><th>N°</th><th>Apellidos</th><th>Nombres</th><th>Fecha nac.</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ---------- 6. FILTRO SALARIO ---------- -->
+    <section id="sec-salario" class="seccion" hidden>
+      <header class="sec-head">
+        <h1>Filtro 2 · Ordenado por salario base</h1>
+        <p>De mayor a menor salario. A igual salario se conserva el orden original de la lista.</p>
+      </header>
+      <div class="card tabla-wrap">
+        <table id="tablaSalario" class="tabla">
+          <thead><tr><th>N°</th><th>Apellidos</th><th>Nombres</th><th class="num">Salario base</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ---------- VER MATRICES ---------- -->
+    <section id="sec-matrices" class="seccion" hidden>
+      <header class="sec-head">
+        <h1>Las 4 matrices paralelas</h1>
+        <p>Elija un empleado para ver su fila <em>i</em> en cada matriz, o recorra las matrices completas.</p>
+      </header>
+
+      <div class="card">
+        <div class="fila-selector">
+          <label for="selFila">Empleado (índice i):</label>
+          <select id="selFila"></select>
+        </div>
+        <div id="vistaFila" class="grid-2"></div>
+      </div>
+
+      <div class="card">
+        <div class="tabs" role="tablist" id="tabsMatrices"></div>
+        <div class="tabla-wrap alto">
+          <table id="tablaMatriz" class="tabla compacta"><thead></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- CÁLCULO Y VALIDACIÓN ---------- -->
+    <section id="sec-calculo" class="seccion" hidden>
+      <header class="sec-head">
+        <h1>Cálculo y validación</h1>
+        <p>Esta sección sirve para dos cosas: <strong>comprobar</strong> que el programa calcula la nómina igual que el profesor, y <strong>simular</strong> cómo cambia el pago de un empleado si trabaja más o menos horas extras.</p>
+      </header>
+
+      <div class="card">
+        <h3><span class="paso-num">1</span>Comprobar que el cálculo es correcto</h3>
+        <p class="nota">El programa vuelve a calcular la nómina de los 50 empleados con sus propias fórmulas (a partir del salario y las horas extras) y compara cada resultado con los valores de <code>matriz_nomina.txt</code>. Si todo coincide, las fórmulas están bien.</p>
+        <div class="acciones">
+          <button id="btnRecalcular" class="btn primario">Comprobar las 50 nóminas</button>
+          <button id="btnDescargar" class="btn secundario" disabled>Descargar el resultado (.txt)</button>
+        </div>
+        <div id="resValidacion" class="mensajes"></div>
+      </div>
+
+      <div class="card">
+        <h3><span class="paso-num">2</span>Simulador: ¿qué pasa si cambian las horas extras?</h3>
+        <p class="nota">Elija un empleado y cambie sus horas. Verá al instante cuánto cambia lo que recibe y lo que le cuesta a la empresa. Es solo un ensayo: <strong>no modifica los datos guardados</strong>.</p>
+
+        <div class="fila-selector">
+          <label for="selEmpPrueba">Empleado:</label>
+          <select id="selEmpPrueba"></select>
+        </div>
+        <p id="datosEmpPrueba" class="sim-datos"></p>
+
+        <h4 class="sim-titulo">Horas trabajadas en el mes <small>(cambie estos números)</small></h4>
+        <div id="horasPrueba" class="horas-grid"></div>
+        <div class="acciones">
+          <button id="btnRestablecerHoras" class="btn secundario">↺ Volver a las horas reales</button>
+        </div>
+
+        <div id="estadoPrueba" class="mensajes"></div>
+        <div id="kpisPrueba" class="grid-4"></div>
+
+        <h4 class="sim-titulo">Paso a paso del cálculo</h4>
+        <div class="tabla-wrap">
+          <table id="tablaPasos" class="tabla compacta">
+            <thead><tr><th>Concepto</th><th>Cómo se calcula</th><th class="num">Resultado</th><th class="num">Valor real (archivo)</th><th class="num">Diferencia</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- 7. SALIR ---------- -->
+    <section id="sec-salir" class="seccion" hidden>
+      <header class="sec-head">
+        <h1>Salir del programa</h1>
+      </header>
+      <div class="card centrado">
+        <p>👋 Al salir se vacían las 4 matrices de la memoria. Podrá volver a cargarlas desde la opción 1.</p>
+        <button id="btnSalir" class="btn peligro">Vaciar matrices y salir</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Orden de carga: primero datos, luego lógica, al final la interfaz -->
+<script>
+/* ===== matrices.js ===== */
+/* ============================================================================
+ * matrices.js — Constantes, las 4 matrices paralelas y su carga
+ * Equivale a: #define, declaración de matrices y cargarArchivos() del código .c
+ * ========================================================================== */
+
+// ---- Constantes (iguales a los #define del .c) -----------------------------
+const N = 50;                      // número de empleados
+const SMLMV = 1300000;             // Salario Mínimo Legal Mensual Vigente
+const AUX_TRANSPORTE = 162000;     // Auxilio de transporte legal
+const DIAS_MES = 30;               // el .c asume mes completo (30 días)
+const ARL_RATES = [0, 0.00522, 0.01044, 0.02436, 0.04350, 0.06960]; // nivel 1..5
+
+// ---- Las 4 matrices paralelas: la fila i es el MISMO empleado en todas -----
+// MatrizID[i]     = [cédula, día, mes, año, nivel salarial (1-10), nivel ARL (1-5)]
+// MatrizNyA[i]    = [nombre1, nombre2, apellido1, apellido2]
+// MatrizHoras[i]  = [HED, HEN, RN, HEDF, HENF]
+// MatrizNomina[i] = [HE$, aux, bruto, salud, pensión, totalDed, neto,
+//                    pensiónEmp, saludEmp, ARL, caja, costoTotal]
+let MatrizID = [];
+let MatrizNyA = [];
+let MatrizHoras = [];
+let MatrizNomina = [];
+
+// Definición de las columnas (sirve para encabezados y para leer los archivos)
+const ARCHIVOS = [
+  { clave: 'id',     archivo: 'matriz_id.txt',     columnas: 6,  tipo: 'numero', titulo: 'Matriz_ID',     etiquetas: ['Cédula', 'Día', 'Mes', 'Año', 'Nivel salarial', 'Nivel ARL'] },
+  { clave: 'nya',    archivo: 'matriz_nya.txt',    columnas: 4,  tipo: 'texto',  titulo: 'Matriz_NyA',    etiquetas: ['Nombre 1', 'Nombre 2', 'Apellido 1', 'Apellido 2'] },
+  { clave: 'horas',  archivo: 'matriz_horas.txt',  columnas: 5,  tipo: 'numero', titulo: 'Matriz_Horas',  etiquetas: ['HED 1.25', 'HEN 1.75', 'RN 0.35', 'HEDF 2.00', 'HENF 2.50'] },
+  { clave: 'nomina', archivo: 'matriz_nomina.txt', columnas: 12, tipo: 'numero', titulo: 'Matriz_Nomina', etiquetas: ['Horas extras', 'Aux. transp.', 'Bruto', 'Salud trab.', 'Pensión trab.', 'Tot. deduc.', 'Neto', 'Pensión emp.', 'Salud emp.', 'ARL', 'Caja comp.', 'Costo empresa'] }
+];
+
+// ---- Contenido de los 4 archivos .txt, incluido en el programa --------------
+// La carga NO lee archivos nuevos: siempre usa estos datos fijos.
+const DATOS_TXT = {
+  id: `1000224906 11 9 1991 2 2
+1000674421 27 12 1999 8 5
+1000401193 27 2 1989 1 4
+1000473960 26 7 1998 9 1
+1000579668 5 11 1997 10 3
+1000195089 13 10 1992 8 1
+1000650138 9 7 1993 8 5
+1000957873 2 12 1991 2 5
+1000990900 4 11 1997 8 4
+1000422570 18 11 1991 8 4
+1000134717 5 11 2003 10 4
+1000826293 16 8 1991 8 4
+1000951340 4 8 1997 9 3
+1000780052 9 8 1986 2 2
+1000100224 15 10 1992 2 5
+1000381580 22 11 1986 3 1
+1000855470 5 9 1982 8 5
+1000538072 22 3 2004 3 5
+1000645291 26 4 1987 1 1
+1000470569 25 1 1975 9 4
+1000621739 15 10 1994 3 2
+1000452760 15 10 1982 2 5
+1000779719 18 1 1989 4 4
+1000244411 6 11 2002 3 4
+1000501798 10 3 1986 3 3
+1000285558 11 9 1990 8 1
+1000342572 1 2 2003 8 3
+1000987661 6 6 1992 10 5
+1000887738 19 12 1981 10 3
+1000919504 9 2 1988 3 1
+1000428781 9 10 2001 2 3
+1000114544 14 5 1988 1 1
+1000198429 22 9 1993 6 3
+1000431416 20 4 1994 8 4
+1000406059 27 6 1976 7 1
+1000905194 14 6 1993 1 5
+1000218067 6 10 1978 2 1
+1000545403 19 3 1986 7 4
+1000292379 18 1 1996 9 5
+1000117401 9 9 1990 7 3
+1000679843 2 11 2002 9 3
+1000981487 1 11 1982 8 1
+1000477415 26 4 1992 5 3
+1000579786 18 8 2003 10 3
+1000105569 12 9 1997 7 1
+1000866517 9 3 1997 2 1
+1000146811 13 7 1992 9 2
+1000508118 11 9 1983 5 1
+1000667452 10 6 1979 7 2
+1000951578 25 9 1980 9 1`,
+  nya: `Alexander      Esteban        Arias          Londoño
+Gabriel        Alejandro      Gomez          Osorio
+Diego          David          Rodriguez      Zapata
+Sara           Jose           Lopez          Castrillon
+Santiago       Alexander      Perez          Agudelo
+Maria          Isabel         Gonzalez       Cardona
+Juan           Carlos         Martinez       Giraldo
+Laura          Fernanda       Sanchez        Restrepo
+Carlos         Andres         Ramirez        Valencia
+Ana            Sofia          Torres         Mejia
+Daniel         Eduardo        Diaz           Vargas
+Sofia          Victoria       Vargas         Morales
+Andres         Felipe         Castro         Ceballos
+Camila         Andrea         Morales        Salazar
+Mateo          Manuel         Herrera        Montoya
+Valentina      Camila         Rios           Cano
+David          Alberto        Giraldo        Munoz
+Mariana        Lucia          Jaramillo      Marin
+Nicolas        Guillermo      Restrepo       Bedoya
+Isabella       Mariana        Valencia       Buitrago
+Lucas          Enrique        Ospina         Henao
+Lucia          Valeria        Zapata         Echeverri
+Felipe         Francisco      Cardona        Gutierrez
+Gabriela       Gabriela       Mejia          Suarez
+Sebastian      Javier         Ceballos       Rojas
+Victoria       Daniela        Salazar        Moreno
+Samuel         Rodrigo        Montoya        Jimenez
+Manuela        Paula          Cano           Ortiz
+Alejandro      Fernando       Munoz          Silva
+Salome         Renata         Marin          Cortez
+Joaquin        Gonzalo        Agudelo        Naranjo
+Valeria        Martina        Bedoya         Pineda
+Tomas          Mauricio       Buitrago       Aristizabal
+Antonella      Antonia        Henao          Bermudez
+Emmanuel       Ricardo        Echeverri      Rios
+Elena          Sara           Osorio         Jaramillo
+Benjamin       Arturo         Castrillon     Ospina
+Alicia         Elena          Londoño        Arias
+Ignacio        Emilio         Gutierrez      Gomez
+Clara          Clara          Suarez         Rodriguez
+Julian         Alfonso        Rojas          Lopez
+Emilia         Juana          Moreno         Perez
+Martin         Ramiro         Jimenez        Gonzalez
+Renata         Paulina        Ortiz          Martinez
+Simon          Hernan         Silva          Sanchez
+Juana          Catalina       Cortez         Ramirez
+Esteban        Alvaro         Naranjo        Torres
+Catalina       Julia          Pineda         Diaz
+Jeronimo       Ignacio        Aristizabal    Castro
+Paulina        Manuela        Bermudez       Herrera`,
+  horas: `6 4 8 8 0
+4 0 0 0 0
+2 0 5 4 0
+2 0 8 4 0
+0 0 0 8 0
+4 4 8 8 0
+6 0 8 0 0
+4 2 0 8 0
+6 0 8 8 0
+4 0 0 4 0
+6 2 0 0 0
+6 0 0 4 0
+4 0 5 8 0
+4 0 5 0 0
+0 0 0 0 0
+2 4 8 8 0
+0 4 8 4 0
+2 4 5 8 0
+4 0 0 4 0
+2 0 5 4 0
+6 4 0 8 0
+4 0 0 0 0
+0 0 8 0 0
+2 2 8 8 0
+4 2 5 4 0
+6 4 0 0 0
+4 4 0 0 0
+0 0 8 4 0
+6 0 8 0 0
+0 0 0 0 0
+2 0 0 4 0
+0 0 0 4 0
+4 4 8 0 0
+0 0 8 4 0
+2 0 0 0 0
+2 0 8 0 0
+0 4 0 4 0
+4 0 5 0 0
+4 0 0 0 0
+2 0 8 0 0
+2 4 0 0 0
+0 4 0 8 0
+0 0 0 8 0
+0 0 5 0 0
+0 0 0 4 0
+6 0 8 4 0
+6 0 0 0 0
+6 0 0 4 0
+0 4 5 8 0
+0 0 8 0 0`,
+  nomina: `277500.00 162000.00 2439500.00 91100.00 91100.00 182200.00 2257300.00 273300.00 193587.50 23777.10 91100.00 3021264.60
+166666.67 0.00 8166666.67 326666.67 326666.67 653333.33 7513333.33 980000.00 694166.67 568400.00 326666.67 10735900.00
+51041.67 162000.00 1213041.67 42041.67 42041.67 84083.33 1128958.33 126125.00 89338.54 45720.31 42041.67 1516267.19
+498750.00 0.00 9498750.00 379950.00 379950.00 759900.00 8738850.00 1139850.00 807393.75 49583.47 379950.00 11875527.22
+666666.67 0.00 10666666.67 426666.67 426666.67 853333.33 9813333.33 1280000.00 906666.67 259840.00 426666.67 13539840.00
+1026666.67 0.00 9026666.67 361066.67 361066.67 722133.33 8304533.33 1083200.00 767266.67 47119.20 361066.67 11285319.20
+343333.33 0.00 8343333.33 333733.33 333733.33 667466.67 7675866.67 1001200.00 709183.33 580696.00 333733.33 10968146.00
+204166.67 162000.00 2366166.67 88166.67 88166.67 176333.33 2189833.33 264500.00 187354.17 153410.00 88166.67 3059597.50
+876666.67 0.00 8876666.67 355066.67 355066.67 710133.33 8166533.33 1065200.00 754516.67 386135.00 355066.67 11437585.00
+433333.33 0.00 8433333.33 337333.33 337333.33 674666.67 7758666.67 1012000.00 716833.33 366850.00 337333.33 10866350.00
+458333.33 0.00 10458333.33 418333.33 418333.33 836666.67 9621666.67 1255000.00 888958.33 454937.50 418333.33 13475562.50
+516666.67 0.00 8516666.67 340666.67 340666.67 681333.33 7835333.33 1022000.00 723916.67 370475.00 340666.67 10973725.00
+853125.00 0.00 9853125.00 394125.00 394125.00 788250.00 9064875.00 1182375.00 837515.63 240022.12 394125.00 12507162.75
+56250.00 162000.00 2218250.00 82250.00 82250.00 164500.00 2053750.00 246750.00 174781.25 21467.25 82250.00 2743498.50
+0.00 162000.00 2162000.00 80000.00 80000.00 160000.00 2002000.00 240000.00 170000.00 139200.00 80000.00 2791200.00
+353750.00 0.00 3353750.00 134150.00 134150.00 268300.00 3085450.00 402450.00 285068.75 17506.58 134150.00 4192925.33
+593333.33 0.00 8593333.33 343733.33 343733.33 687466.67 7905866.67 1031200.00 730433.33 598096.00 343733.33 11296796.00
+340625.00 0.00 3340625.00 133625.00 133625.00 267250.00 3073375.00 400875.00 283953.12 232507.50 133625.00 4391585.62
+54166.67 162000.00 1216166.67 42166.67 42166.67 84333.33 1131833.33 126500.00 89604.17 5502.75 42166.67 1479940.25
+459375.00 0.00 9459375.00 378375.00 378375.00 756750.00 8702625.00 1135125.00 804046.88 411482.81 378375.00 12188404.69
+381250.00 0.00 3381250.00 135250.00 135250.00 270500.00 3110750.00 405750.00 287406.25 35300.25 135250.00 4244956.50
+41666.67 162000.00 2203666.67 81666.67 81666.67 163333.33 2040333.33 245000.00 173541.67 142100.00 81666.67 2845975.00
+46666.67 0.00 4046666.67 161866.67 161866.67 323733.33 3722933.33 485600.00 343966.67 176030.00 161866.67 5214130.00
+310000.00 0.00 3310000.00 132400.00 132400.00 264800.00 3045200.00 397200.00 281350.00 143985.00 132400.00 4264935.00
+228125.00 0.00 3228125.00 129125.00 129125.00 258250.00 2969875.00 387375.00 274390.62 78637.12 129125.00 4097652.75
+483333.33 0.00 8483333.33 339333.33 339333.33 678666.67 7804666.67 1018000.00 721083.33 44283.00 339333.33 10606033.00
+400000.00 0.00 8400000.00 336000.00 336000.00 672000.00 7728000.00 1008000.00 714000.00 204624.00 336000.00 10662624.00
+450000.00 0.00 10450000.00 418000.00 418000.00 836000.00 9614000.00 1254000.00 888250.00 727320.00 418000.00 13737570.00
+429166.67 0.00 10429166.67 417166.67 417166.67 834333.33 9594833.33 1251500.00 886479.17 254054.50 417166.67 13238367.00
+0.00 0.00 3000000.00 120000.00 120000.00 240000.00 2760000.00 360000.00 255000.00 15660.00 120000.00 3750660.00
+87500.00 162000.00 2249500.00 83500.00 83500.00 167000.00 2082500.00 250500.00 177437.50 50851.50 83500.00 2811789.00
+33333.33 162000.00 1195333.33 41333.33 41333.33 82666.67 1112666.67 124000.00 87833.33 5394.00 41333.33 1453894.00
+370000.00 0.00 6370000.00 254800.00 254800.00 509600.00 5860400.00 764400.00 541450.00 155173.20 254800.00 8085823.20
+360000.00 0.00 8360000.00 334400.00 334400.00 668800.00 7691200.00 1003200.00 710600.00 363660.00 334400.00 10771860.00
+72916.67 0.00 7072916.67 282916.67 282916.67 565833.33 6507083.33 848750.00 601197.92 36920.62 282916.67 8842701.88
+22083.33 162000.00 1184083.33 40883.33 40883.33 81766.67 1102316.67 122650.00 86877.08 71137.00 40883.33 1505630.75
+125000.00 162000.00 2287000.00 85000.00 85000.00 170000.00 2117000.00 255000.00 180625.00 11092.50 85000.00 2818717.50
+196875.00 0.00 7196875.00 287875.00 287875.00 575750.00 6621125.00 863625.00 611734.38 313064.06 287875.00 9273173.44
+187500.00 0.00 9187500.00 367500.00 367500.00 735000.00 8452500.00 1102500.00 780937.50 639450.00 367500.00 12077887.50
+154583.33 0.00 7154583.33 286183.33 286183.33 572366.67 6582216.67 858550.00 608139.58 174285.65 286183.33 9081741.90
+356250.00 0.00 9356250.00 374250.00 374250.00 748500.00 8607750.00 1122750.00 795281.25 227918.25 374250.00 11876449.50
+766666.67 0.00 8766666.67 350666.67 350666.67 701333.33 8065333.33 1052000.00 745166.67 45762.00 350666.67 10960262.00
+333333.33 0.00 5333333.33 213333.33 213333.33 426666.67 4906666.67 640000.00 453333.33 129920.00 213333.33 6769920.00
+72916.67 0.00 10072916.67 402916.67 402916.67 805833.33 9267083.33 1208750.00 856197.92 245376.25 402916.67 12786157.50
+233333.33 0.00 7233333.33 289333.33 289333.33 578666.67 6654666.67 868000.00 614833.33 37758.00 289333.33 9043258.00
+152500.00 162000.00 2314500.00 86100.00 86100.00 172200.00 2142300.00 258300.00 182962.50 11236.05 86100.00 2853098.55
+281250.00 0.00 9281250.00 371250.00 371250.00 742500.00 8538750.00 1113750.00 788906.25 96896.25 371250.00 11652052.50
+322916.67 0.00 5322916.67 212916.67 212916.67 425833.33 4897083.33 638750.00 452447.92 27785.62 212916.67 6654816.88
+721875.00 0.00 7721875.00 308875.00 308875.00 617750.00 7104125.00 926625.00 656359.38 80616.38 308875.00 9694350.75
+105000.00 0.00 9105000.00 364200.00 364200.00 728400.00 8376600.00 1092600.00 773925.00 47528.10 364200.00 11383253.10`
+};
+
+/**
+ * Convierte el texto de un .txt en una matriz de N filas (equivale al fscanf).
+ * Lanza Error con un mensaje claro si el archivo no tiene el formato esperado.
+ */
+function parsearMatriz(texto, def) {
+  const lineas = texto.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+  if (lineas.length !== N) {
+    throw new Error(`${def.archivo}: se esperaban ${N} filas y se encontraron ${lineas.length}.`);
+  }
+  return lineas.map((linea, i) => {
+    const campos = linea.split(/\s+/);
+    if (campos.length !== def.columnas) {
+      throw new Error(`${def.archivo}, fila ${i + 1}: se esperaban ${def.columnas} columnas y hay ${campos.length}.`);
+    }
+    if (def.tipo === 'texto') return campos;
+    return campos.map((c, j) => {
+      const v = Number(c);
+      if (!Number.isFinite(v)) {
+        throw new Error(`${def.archivo}, fila ${i + 1}, columna ${j + 1}: "${c}" no es un número.`);
+      }
+      return v;
+    });
+  });
+}
+
+/** Guarda las 4 matrices ya parseadas en las variables globales. */
+function asignarMatrices(m) {
+  MatrizID = m.id;
+  MatrizNyA = m.nya;
+  MatrizHoras = m.horas;
+  MatrizNomina = m.nomina;
+}
+
+/** Vacía las matrices (opción "Salir"). */
+function vaciarMatrices() {
+  MatrizID = []; MatrizNyA = []; MatrizHoras = []; MatrizNomina = [];
+}
+
+/** ¿Hay datos cargados en las matrices? */
+function hayDatos() {
+  return MatrizID.length === N;
+}
+
+/**
+ * Llena las 4 matrices con los datos incluidos en el programa (DATOS_TXT).
+ * Equivale a cargarArchivos() del .c. Devuelve { ok, detalle[] }.
+ */
+function cargarMatrices() {
+  const resultado = {};
+  const detalle = [];
+  for (const def of ARCHIVOS) {
+    try {
+      resultado[def.clave] = parsearMatriz(DATOS_TXT[def.clave], def);
+      detalle.push({ archivo: def.archivo, ok: true, filas: N });
+    } catch (e) {
+      detalle.push({ archivo: def.archivo, ok: false, error: e.message });
+    }
+  }
+  const ok = detalle.every(d => d.ok);
+  if (ok) asignarMatrices(resultado);
+  return { ok, detalle };
+}
+
+/* ===== nomina.js ===== */
+/* ============================================================================
+ * nomina.js — Lógica de negocio (cálculo, búsqueda, ordenamiento, comparación)
+ * Equivale a: calcularNomina(), buscarPorCedula(), ordenarYFiltrarPor...() del .c
+ * ========================================================================== */
+
+// Las constantes (N, SMLMV, ARL_RATES...) y las matrices vienen de matrices.js,
+// que se carga antes en index.html.
+
+// Factores de recargo de cada columna de Matriz_Horas: HED, HEN, RN, HEDF, HENF
+const FACTORES_HORAS = [1.25, 1.75, 0.35, 2.00, 2.50];
+
+/** Salario base mensual en pesos: el nivel salarial (1–10) son millones. */
+function salarioBase(i) {
+  return MatrizID[i][4] * 1000000;
+}
+
+/**
+ * Calcula UNA fila de Matriz_Nomina (12 columnas) a partir de Matriz_ID y Matriz_Horas.
+ * Es la función que en el .c quedó declarada como calcularNomina() pero sin cuerpo.
+ */
+function calcularFilaNomina(ID, horas) {
+  const salario = ID[4] * 1000000;
+  const nivelArl = ID[5];
+
+  const vho = salario / 240;                                           // valor hora ordinaria
+  let factorTotal = 0;
+  for (let j = 0; j < 5; j++) factorTotal += horas[j] * FACTORES_HORAS[j];
+  const horasExtras = factorTotal * vho;                               // [0]
+
+  const devengadoSalario = (salario / 30) * DIAS_MES;
+  const ibc = devengadoSalario + horasExtras;                          // base de cotización
+  const aux = (salario <= 2 * SMLMV) ? (AUX_TRANSPORTE / 30) * DIAS_MES : 0;  // [1]
+  const bruto = ibc + aux;                                             // [2]
+
+  const salud = ibc * 0.04;                                            // [3]
+  const pension = ibc * 0.04;                                          // [4]
+  const totalDeducciones = salud + pension;                            // [5]
+  const neto = bruto - totalDeducciones;                               // [6]
+
+  const pensionEmp = ibc * 0.12;                                       // [7]
+  const saludEmp = ibc * 0.085;                                        // [8]
+  const arl = ibc * ARL_RATES[nivelArl];                               // [9]
+  const caja = ibc * 0.04;                                             // [10]
+  const costoTotal = bruto + pensionEmp + saludEmp + arl + caja;       // [11]
+
+  return [horasExtras, aux, bruto, salud, pension, totalDeducciones, neto,
+          pensionEmp, saludEmp, arl, caja, costoTotal];
+}
+
+/** Calcula las 50 filas y devuelve una matriz nueva (no toca MatrizNomina). */
+function calcularNomina() {
+  const resultado = [];
+  for (let i = 0; i < N; i++) {
+    resultado.push(calcularFilaNomina(MatrizID[i], MatrizHoras[i]));
+  }
+  return resultado;
+}
+
+/** Equivale a buscarPorCedula(): búsqueda lineal; devuelve el índice o -1. */
+function buscarPorCedula(cedula) {
+  for (let i = 0; i < N; i++) {
+    if (MatrizID[i][0] === cedula) return i;
+  }
+  return -1;
+}
+
+/** Nombre completo en el orden del .c: Apellido1 Apellido2 Nombre1 Nombre2. */
+function nombreCompleto(i) {
+  return `${MatrizNyA[i][2]} ${MatrizNyA[i][3]} ${MatrizNyA[i][0]} ${MatrizNyA[i][1]}`;
+}
+
+/**
+ * Filtro 1: ordena los ÍNDICES (no las matrices) por apellido1 y, si empatan, apellido2.
+ * Mismo método de burbuja que el .c; `<`/`>` sobre strings equivale a strcmp.
+ */
+function ordenarPorApellidos() {
+  const idx = Array.from({ length: N }, (_, i) => i);
+  for (let i = 0; i < N - 1; i++) {
+    for (let j = 0; j < N - i - 1; j++) {
+      const a = idx[j], b = idx[j + 1];
+      const ap1A = MatrizNyA[a][2], ap1B = MatrizNyA[b][2];
+      const ap2A = MatrizNyA[a][3], ap2B = MatrizNyA[b][3];
+      if (ap1A > ap1B || (ap1A === ap1B && ap2A > ap2B)) {
+        const temp = idx[j]; idx[j] = idx[j + 1]; idx[j + 1] = temp;
+      }
+    }
+  }
+  return idx;
+}
+
+/** Filtro 2: ordena los índices por nivel salarial de mayor a menor (burbuja, estable). */
+function ordenarPorSalario() {
+  const idx = Array.from({ length: N }, (_, i) => i);
+  for (let i = 0; i < N - 1; i++) {
+    for (let j = 0; j < N - i - 1; j++) {
+      const a = idx[j], b = idx[j + 1];
+      if (MatrizID[a][4] < MatrizID[b][4]) {
+        const temp = idx[j]; idx[j] = idx[j + 1]; idx[j + 1] = temp;
+      }
+    }
+  }
+  return idx;
+}
+
+/**
+ * Compara la nómina calculada contra la leída del archivo, celda por celda.
+ * Tolerancia: 1 centavo (el archivo está redondeado a 2 decimales).
+ */
+function compararNominas(calculada, desdeArchivo, tolerancia = 0.011) {
+  let iguales = 0, distintas = 0, maxDif = 0;
+  const diferencias = [];
+  for (let i = 0; i < N; i++) {
+    for (let j = 0; j < 12; j++) {
+      const dif = Math.abs(calculada[i][j] - desdeArchivo[i][j]);
+      if (dif > maxDif) maxDif = dif;
+      if (dif <= tolerancia) iguales++;
+      else { distintas++; diferencias.push({ fila: i, col: j, calculado: calculada[i][j], archivo: desdeArchivo[i][j] }); }
+    }
+  }
+  return { total: N * 12, iguales, distintas, maxDif, diferencias };
+}
+
+/** Texto de matriz_nomina.txt (equivale a guardarMatrizNomina() del .c). */
+function serializarMatrizNomina(matriz) {
+  return matriz.map(fila => fila.map(v => v.toFixed(2)).join(' ')).join('\n') + '\n';
+}
+
+/** Totales de las columnas que usa el reporte consolidado. */
+function calcularTotales() {
+  const t = { salarioBase: 0, bruto: 0, deducciones: 0, neto: 0, costo: 0 };
+  for (let i = 0; i < N; i++) {
+    t.salarioBase += salarioBase(i);
+    t.bruto += MatrizNomina[i][2];
+    t.deducciones += MatrizNomina[i][5];
+    t.neto += MatrizNomina[i][6];
+    t.costo += MatrizNomina[i][11];
+  }
+  return t;
+}
+
+/* ===== ui.js ===== */
+/* ============================================================================
+ * ui.js — Interfaz: menú, tablas, colillas y eventos
+ * Equivale a main() + mostrarMenu() + las funciones mostrar...() del .c
+ * Usa las matrices (matrices.js) y la lógica (nomina.js).
+ * ========================================================================== */
+
+// ---------- Utilidades de formato --------------------------------------------
+const nf2 = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const dinero = n => '$ ' + nf2.format(n);
+const pad2 = n => String(n).padStart(2, '0');
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const $ = (sel, raiz = document) => raiz.querySelector(sel);
+const $$ = (sel, raiz = document) => Array.from(raiz.querySelectorAll(sel));
+
+function fechaNac(i) {
+  return `${pad2(MatrizID[i][1])}/${pad2(MatrizID[i][2])}/${String(MatrizID[i][3]).padStart(4, '0')}`;
+}
+function apellidos(i) { return `${MatrizNyA[i][2]} ${MatrizNyA[i][3]}`; }
+function nombres(i) { return `${MatrizNyA[i][0]} ${MatrizNyA[i][1]}`; }
+
+// ---------- Estado de la interfaz --------------------------------------------
+let estadoArchivos = {};          // clave -> { ok, error }
+let nominaRecalculada = null;     // resultado de calcularNomina() para poder descargarlo
+let tabMatriz = 'id';             // matriz visible en la vista de matrices
+const SECCIONES_CON_DATOS = ['consolidado', 'trabajador', 'empleador', 'apellidos', 'salario', 'matrices', 'calculo'];
+
+// ---------- Navegación --------------------------------------------------------
+function mostrar(sec) {
+  if (SECCIONES_CON_DATOS.includes(sec) && !hayDatos()) {
+    sec = 'cargar';
+    mensajeCarga('warn', 'Primero cargue las matrices (opción 1).');
+  }
+  $$('.seccion').forEach(s => { s.hidden = (s.id !== 'sec-' + sec); });
+  $$('.nav-btn').forEach(b => {
+    const activo = b.dataset.sec === sec;
+    b.classList.toggle('activo', activo);
+    if (activo) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+  });
+  window.scrollTo(0, 0);
+}
+
+function actualizarEstadoMini() {
+  const el = $('#estadoMini');
+  if (hayDatos()) { el.textContent = `● ${N} empleados cargados`; el.className = 'estado-mini con-datos'; }
+  else { el.textContent = 'Sin datos cargados'; el.className = 'estado-mini sin-datos'; }
+}
+
+// ---------- 1. Carga de archivos ---------------------------------------------
+function mensajeCarga(tipo, texto) {
+  const caja = $('#mensajesCarga');
+  caja.innerHTML = `<div class="msg ${tipo}">${esc(texto)}</div>`;
+}
+
+function renderTarjetasArchivos() {
+  $('#tarjetasArchivos').innerHTML = ARCHIVOS.map(def => {
+    const est = estadoArchivos[def.clave];
+    let badge = '<span class="badge gris">Pendiente</span>';
+    if (est && est.ok) badge = '<span class="badge verde">Cargada</span>';
+    else if (est && !est.ok) badge = '<span class="badge rojo">Error</span>';
+    return `<div class="card archivo">
+      <div class="archivo-top"><strong>${def.titulo}</strong>${badge}</div>
+      <code>${def.archivo}</code>
+      <div class="dim">${N} × ${def.columnas}</div>
+      <small>${def.tipo === 'texto' ? 'Texto (cadenas)' : 'Números'}</small>
+    </div>`;
+  }).join('');
+}
+
+/**
+ * Carga las matrices y actualiza la pantalla.
+ * conMensaje = true cuando el usuario presiona el botón de la opción 1.
+ */
+function cargarYMostrar(conMensaje) {
+  const res = cargarMatrices();
+  res.detalle.forEach((d, k) => { estadoArchivos[ARCHIVOS[k].clave] = d.ok ? { ok: true } : { ok: false, error: d.error }; });
+  renderTarjetasArchivos();
+  actualizarEstadoMini();
+  if (!res.ok) {
+    const errores = res.detalle.filter(d => !d.ok).map(d => `${d.archivo}: ${d.error}`);
+    $('#mensajesCarga').innerHTML = errores.map(e => `<div class="msg error">❌ ${esc(e)}</div>`).join('');
+    return;
+  }
+  nominaRecalculada = null;
+  $('#mensajesCarga').innerHTML = conMensaje ? '<div class="msg ok">✅ Matrices cargadas exitosamente!</div>' : '';
+  renderTodo();
+}
+
+// ---------- Render general tras cargar ---------------------------------------
+function renderTodo() {
+  renderListaCedulas();
+  renderConsolidado();
+  renderFiltroApellidos();
+  renderFiltroSalario();
+  renderSelectoresEmpleado();
+  renderTabsMatrices();
+  renderVistaFila();
+  renderMatrizCompleta();
+  renderPrueba();
+  $('#resValidacion').innerHTML = '';
+  $('#btnDescargar').disabled = true;
+}
+
+function renderListaCedulas() {
+  $('#listaCedulas').innerHTML = MatrizID.map((fila, i) =>
+    `<option value="${fila[0]}">${esc(nombreCompleto(i))}</option>`).join('');
+}
+
+// ---------- 2. Reporte consolidado -------------------------------------------
+function renderConsolidado() {
+  const t = calcularTotales();
+  $('#kpis').innerHTML = [
+    ['Devengado bruto total', t.bruto, ''],
+    ['Neto total a pagar', t.neto, 'verde'],
+    ['Costo total empresa', t.costo, 'morado'],
+    ['Costo promedio por empleado', t.costo / N, 'morado']
+  ].map(([titulo, valor, clase]) => `<div class="card kpi ${clase}"><small>${titulo}</small><strong>${dinero(valor)}</strong></div>`).join('');
+
+  $('#tablaConsolidado tbody').innerHTML = MatrizID.map((fila, i) => `
+    <tr class="click" data-ced="${fila[0]}" tabindex="0">
+      <td>${pad2(i + 1)}</td><td>${fila[0]}</td><td>${esc(nombreCompleto(i))}</td>
+      <td class="num">${dinero(salarioBase(i))}</td>
+      <td class="num">${dinero(MatrizNomina[i][2])}</td>
+      <td class="num">${dinero(MatrizNomina[i][5])}</td>
+      <td class="num">${dinero(MatrizNomina[i][6])}</td>
+      <td class="num">${dinero(MatrizNomina[i][11])}</td>
+    </tr>`).join('');
+
+  $('#tablaConsolidado tfoot').innerHTML = `<tr>
+    <td colspan="3">TOTALES (${N} empleados)</td>
+    <td class="num">${dinero(t.salarioBase)}</td><td class="num">${dinero(t.bruto)}</td>
+    <td class="num">${dinero(t.deducciones)}</td><td class="num">${dinero(t.neto)}</td>
+    <td class="num">${dinero(t.costo)}</td></tr>`;
+}
+
+// ---------- 3 y 4. Colillas ----------------------------------------------------
+function filaColilla(texto, valor, clase = '') {
+  return `<tr class="${clase}"><td>${texto}</td><td class="num">${dinero(valor)}</td></tr>`;
+}
+
+function htmlColillaTrabajador(i) {
+  const n = MatrizNomina[i];
+  return `<article class="colilla trabajador">
+    <h2>DESPRENDIBLE DE PAGO (TRABAJADOR)</h2>
+    <div class="datos">
+      <span><b>N° Lista:</b> ${i + 1}</span><span><b>Cédula:</b> ${MatrizID[i][0]}</span>
+      <span><b>F. Nac:</b> ${fechaNac(i)}</span>
+      <span class="ancho"><b>Empleado:</b> ${esc(nombreCompleto(i))}</span>
+    </div>
+    <h4>1. Devengados (ingresos)</h4>
+    <table class="tabla-colilla">
+      ${filaColilla(`Salario básico (Nivel ${MatrizID[i][4]})`, salarioBase(i))}
+      ${filaColilla('Total horas extras / recargos', n[0])}
+      ${filaColilla('Auxilio de transporte legal', n[1])}
+      ${filaColilla('TOTAL DEVENGADO BRUTO', n[2], 'total')}
+    </table>
+    <h4>2. Deducciones (descuentos de ley)</h4>
+    <table class="tabla-colilla">
+      ${filaColilla('Aporte salud trabajador (4%)', n[3])}
+      ${filaColilla('Aporte pensión trabajador (4%)', n[4])}
+      ${filaColilla('TOTAL DEDUCCIONES', n[5], 'total')}
+    </table>
+    <div class="gran-total verde"><span>NETO A RECIBIR EN CUENTA</span><strong>${dinero(n[6])}</strong></div>
+  </article>`;
+}
+
+function htmlColillaEmpleador(i) {
+  const n = MatrizNomina[i];
+  const nivel = MatrizID[i][5];
+  return `<article class="colilla empleador">
+    <h2>HOJA DE COSTOS EMPRESARIALES (EMPLEADOR)</h2>
+    <div class="datos">
+      <span><b>N° Lista:</b> ${i + 1}</span><span><b>Cédula:</b> ${MatrizID[i][0]}</span>
+      <span><b>Nivel ARL:</b> ${nivel}</span>
+      <span class="ancho"><b>Empleado:</b> ${esc(nombreCompleto(i))}</span>
+    </div>
+    <table class="tabla-colilla">
+      ${filaColilla('DEVENGADO BRUTO (sueldo + HE + aux.)', n[2], 'total')}
+    </table>
+    <h4>Aportes de seguridad social y parafiscales</h4>
+    <table class="tabla-colilla">
+      <tr><td>Pensión empleador (12%) <small>→ Fondo</small></td><td class="num">${dinero(n[7])}</td></tr>
+      <tr><td>Salud empleador (8.5%) <small>→ EPS</small></td><td class="num">${dinero(n[8])}</td></tr>
+      <tr><td>ARL nivel ${nivel} (${(ARL_RATES[nivel] * 100).toFixed(3)}%) <small>→ ARL</small></td><td class="num">${dinero(n[9])}</td></tr>
+      <tr><td>Caja de compensación Comfama (4%) <small>→ Caja</small></td><td class="num">${dinero(n[10])}</td></tr>
+    </table>
+    <div class="gran-total morado"><span>COSTO TOTAL EMPRESA</span><strong>${dinero(n[11])}</strong></div>
+  </article>`;
+}
+
+function consultar(destino, texto) {
+  const caja = destino === 'trabajador' ? $('#resTrabajador') : $('#resEmpleador');
+  const cedula = Number(String(texto).replace(/\D/g, ''));
+  if (!cedula) { caja.innerHTML = '<div class="msg warn">Ingrese una cédula.</div>'; return; }
+  const idx = buscarPorCedula(cedula);
+  if (idx === -1) { caja.innerHTML = '<div class="msg error">❌ Cédula no encontrada.</div>'; return; }
+  caja.innerHTML = destino === 'trabajador' ? htmlColillaTrabajador(idx) : htmlColillaEmpleador(idx);
+}
+
+// ---------- 5 y 6. Filtros ------------------------------------------------------
+function renderFiltroApellidos() {
+  const idx = ordenarPorApellidos();
+  $('#tablaApellidos tbody').innerHTML = idx.map((i, k) =>
+    `<tr><td>${pad2(k + 1)}</td><td>${esc(apellidos(i))}</td><td>${esc(nombres(i))}</td><td>${fechaNac(i)}</td></tr>`).join('');
+}
+
+function renderFiltroSalario() {
+  const idx = ordenarPorSalario();
+  $('#tablaSalario tbody').innerHTML = idx.map((i, k) =>
+    `<tr><td>${pad2(k + 1)}</td><td>${esc(apellidos(i))}</td><td>${esc(nombres(i))}</td><td class="num">${dinero(salarioBase(i))}</td></tr>`).join('');
+}
+
+// ---------- Ver matrices ---------------------------------------------------------
+function matrizPorClave(clave) {
+  return { id: MatrizID, nya: MatrizNyA, horas: MatrizHoras, nomina: MatrizNomina }[clave];
+}
+
+function renderSelectoresEmpleado() {
+  const opciones = MatrizID.map((_, i) => `<option value="${i}">i = ${i} · ${esc(nombreCompleto(i))}</option>`).join('');
+  $('#selFila').innerHTML = opciones;
+  $('#selEmpPrueba').innerHTML = opciones;
+}
+
+function renderVistaFila() {
+  const i = Number($('#selFila').value) || 0;
+  $('#vistaFila').innerHTML = ARCHIVOS.map(def => {
+    const fila = matrizPorClave(def.clave)[i];
+    const filas = def.etiquetas.map((et, j) => {
+      const v = def.clave === 'nomina' ? dinero(fila[j]) : fila[j];
+      return `<tr><td>[${i}][${j}] ${et}</td><td class="num">${esc(v)}</td></tr>`;
+    }).join('');
+    return `<div class="mini-matriz"><h4>${def.titulo}[${i}]</h4><table class="tabla compacta"><tbody>${filas}</tbody></table></div>`;
+  }).join('');
+}
+
+function renderTabsMatrices() {
+  $('#tabsMatrices').innerHTML = ARCHIVOS.map(def =>
+    `<button role="tab" class="tab ${def.clave === tabMatriz ? 'activo' : ''}" data-matriz="${def.clave}" aria-selected="${def.clave === tabMatriz}">${def.titulo} <small>[${N}][${def.columnas}]</small></button>`).join('');
+}
+
+function renderMatrizCompleta() {
+  const def = ARCHIVOS.find(d => d.clave === tabMatriz);
+  const m = matrizPorClave(tabMatriz);
+  $('#tablaMatriz thead').innerHTML = '<tr><th>i</th>' + def.etiquetas.map(e => `<th class="num">${e}</th>`).join('') + '</tr>';
+  $('#tablaMatriz tbody').innerHTML = m.map((fila, i) =>
+    `<tr><td>${i}</td>${fila.map(v => `<td class="num">${esc(tabMatriz === 'nomina' ? nf2.format(v) : v)}</td>`).join('')}</tr>`).join('');
+}
+
+// ---------- Cálculo y validación -------------------------------------------------
+function ejecutarValidacion() {
+  nominaRecalculada = calcularNomina();
+  const cmp = compararNominas(nominaRecalculada, MatrizNomina);
+  const ok = cmp.distintas === 0;
+  let html = ok
+    ? `<div class="msg ok">✅ <strong>El cálculo es correcto.</strong> Se recalcularon ${N} empleados × 12 valores = ${cmp.total} resultados y los ${cmp.iguales} coinciden con matriz_nomina.txt.</div>
+       <p class="nota">Se aceptan diferencias de hasta 1 centavo, porque el archivo guarda los valores redondeados a 2 decimales.</p>`
+    : `<div class="msg error">❌ <strong>Hay diferencias.</strong> ${cmp.distintas} de ${cmp.total} resultados no coinciden con matriz_nomina.txt. Abajo se muestran los primeros.</div>`;
+  if (!ok) {
+    const def = ARCHIVOS[3];
+    html += '<div class="tabla-wrap"><table class="tabla compacta"><thead><tr><th>Empleado</th><th>Valor</th><th class="num">Calculado</th><th class="num">En archivo</th></tr></thead><tbody>' +
+      cmp.diferencias.slice(0, 30).map(d => `<tr><td>${esc(nombreCompleto(d.fila))}</td><td>${def.etiquetas[d.col]}</td><td class="num">${nf2.format(d.calculado)}</td><td class="num">${nf2.format(d.archivo)}</td></tr>`).join('') +
+      '</tbody></table></div>';
+  }
+  $('#resValidacion').innerHTML = html;
+  $('#btnDescargar').disabled = false;
+}
+
+function descargarMatrizNomina() {
+  if (!nominaRecalculada) return;
+  const blob = new Blob([serializarMatrizNomina(nominaRecalculada)], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'matriz_nomina_recalculada.txt';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// Simulador: recalcula la nómina de un empleado con las horas que escriba el usuario
+const TIPOS_HORA = [
+  ['Extra diurna', 'Después de la jornada, de día'],
+  ['Extra nocturna', 'Después de la jornada, de noche'],
+  ['Recargo nocturno', 'Jornada normal, pero de noche'],
+  ['Extra diurna festiva', 'Domingo o festivo, de día'],
+  ['Extra nocturna festiva', 'Domingo o festivo, de noche']
+];
+
+/** Diferencia con signo: "+ $ 10.000,00", "− $ 5.000,00" o "sin cambio". */
+function textoDiferencia(dif) {
+  if (Math.abs(dif) <= 0.011) return 'sin cambio';
+  return (dif > 0 ? '+ ' : '− ') + dinero(Math.abs(dif));
+}
+
+function restablecerHorasPrueba() {
+  $('#horasPrueba').dataset.emp = '';   // obliga a reconstruir las casillas con las horas reales
+  renderPrueba();
+}
+
+function renderPrueba() {
+  const i = Number($('#selEmpPrueba').value) || 0;
+  const ID = MatrizID[i];
+  const salario = ID[4] * 1000000;
+  const vho = salario / 240;
+  const contenedor = $('#horasPrueba');
+
+  // Solo reconstruimos las casillas de horas si cambió el empleado
+  if (contenedor.dataset.emp !== String(i)) {
+    contenedor.dataset.emp = String(i);
+    contenedor.innerHTML = TIPOS_HORA.map(([nombre, cuando], j) =>
+      `<label class="hora-campo"><strong>${nombre}</strong><small>${cuando} · vale ×${FACTORES_HORAS[j].toFixed(2).replace('.', ',')}</small>
+        <input type="number" min="0" step="1" data-h="${j}" value="${MatrizHoras[i][j]}"><output></output></label>`).join('');
+  }
+
+  const horas = $$('#horasPrueba input').map(inp => Math.max(0, Number(inp.value) || 0));
+  const cambio = horas.some((h, j) => h !== MatrizHoras[i][j]);
+
+  // Bajo cada casilla: cuánto dinero suman esas horas
+  $$('#horasPrueba .hora-campo').forEach((campo, j) => {
+    $('output', campo).textContent = `suma ${dinero(horas[j] * FACTORES_HORAS[j] * vho)}`;
+    campo.classList.toggle('cambiada', horas[j] !== MatrizHoras[i][j]);
+  });
+
+  $('#datosEmpPrueba').innerHTML =
+    `Salario base: <strong>${dinero(salario)}</strong> (nivel ${ID[4]}) · Cada hora normal vale <strong>${dinero(vho)}</strong> (salario ÷ 240 horas del mes)`;
+  $('#btnRestablecerHoras').disabled = !cambio;
+
+  const fila = calcularFilaNomina(ID, horas);
+  const archivo = MatrizNomina[i];
+  const factor = horas.reduce((s, h, j) => s + h * FACTORES_HORAS[j], 0);
+  const ibc = (salario / 30) * DIAS_MES + fila[0];
+
+  // Mensaje de estado: ¿son las horas reales o es una simulación?
+  const coincide = fila.every((v, j) => Math.abs(v - archivo[j]) <= 0.011);
+  $('#estadoPrueba').innerHTML = cambio
+    ? '<div class="msg warn">🧪 <strong>Simulación:</strong> cambió las horas (casillas resaltadas). La columna “Diferencia” muestra cuánto sube o baja cada valor frente al real.</div>'
+    : (coincide
+      ? '<div class="msg ok">✅ Estas son las <strong>horas reales</strong> del empleado y el cálculo coincide con matriz_nomina.txt. Cambie alguna hora para simular.</div>'
+      : '<div class="msg error">❌ Con las horas reales, el cálculo no coincide con matriz_nomina.txt.</div>');
+
+  // Tarjetas resumen con el efecto del cambio
+  const tarjeta = (titulo, col, clase) => {
+    const dif = fila[col] - archivo[col];
+    const tono = Math.abs(dif) <= 0.011 ? 'igual' : (dif > 0 ? 'sube' : 'baja');
+    return `<div class="card kpi ${clase}"><small>${titulo}</small><strong>${dinero(fila[col])}</strong><em class="${tono}">${textoDiferencia(dif)}</em></div>`;
+  };
+  $('#kpisPrueba').innerHTML =
+    tarjeta('Pago por horas extras', 0, '') +
+    tarjeta('Neto que recibe el trabajador', 6, 'verde') +
+    tarjeta('Costo total para la empresa', 11, 'morado');
+
+  // Tabla paso a paso
+  const m = v => nf2.format(v);
+  const grupo = t => `<tr class="grupo"><td colspan="5">${t}</td></tr>`;
+  const f = (txt, formula, valor, col, destacado) => {
+    let enArchivo = '—', dif = '—';
+    if (col !== undefined) {
+      enArchivo = m(archivo[col]);
+      const d = valor - archivo[col];
+      dif = Math.abs(d) <= 0.011 ? '<span class="ok-txt">✓ igual</span>' : `<span class="dif-txt">${textoDiferencia(d)}</span>`;
+    }
+    return `<tr${destacado ? ' class="destacado"' : ''}><td>${txt}</td><td><code>${formula}</code></td><td class="num">${m(valor)}</td><td class="num">${enArchivo}</td><td class="num">${dif}</td></tr>`;
+  };
+  const sumaHoras = horas.map((h, j) => `${h}×${FACTORES_HORAS[j]}`).join(' + ');
+  $('#tablaPasos tbody').innerHTML = [
+    grupo('A. Lo que gana el trabajador'),
+    f('Salario base', `nivel ${ID[4]} × 1.000.000`, salario),
+    f('Valor de una hora normal', `${m(salario)} ÷ 240`, vho),
+    f('Horas equivalentes', sumaHoras, factor),
+    f('Pago por horas extras', `${m(factor)} × ${m(vho)}`, fila[0], 0),
+    f('Base de cotización (IBC)', 'salario + horas extras', ibc),
+    f('Auxilio de transporte', salario <= 2 * SMLMV ? 'gana hasta 2 mínimos → 162.000' : 'gana más de 2 mínimos → 0', fila[1], 1),
+    f('Total devengado (bruto)', 'IBC + auxilio', fila[2], 2, true),
+    grupo('B. Lo que se le descuenta'),
+    f('Salud', 'IBC × 4%', fila[3], 3),
+    f('Pensión', 'IBC × 4%', fila[4], 4),
+    f('Total descuentos', 'salud + pensión', fila[5], 5),
+    f('Neto a recibir', 'bruto − descuentos', fila[6], 6, true),
+    grupo('C. Lo que paga la empresa además del sueldo'),
+    f('Pensión', 'IBC × 12%', fila[7], 7),
+    f('Salud', 'IBC × 8,5%', fila[8], 8),
+    f('Riesgos laborales (ARL)', `IBC × ${(ARL_RATES[ID[5]] * 100).toFixed(3).replace('.', ',')}% (nivel ${ID[5]})`, fila[9], 9),
+    f('Caja de compensación', 'IBC × 4%', fila[10], 10),
+    f('Costo total para la empresa', 'bruto + aportes de la empresa', fila[11], 11, true)
+  ].join('');
+}
+
+// ---------- 7. Salir ---------------------------------------------------------------
+function salir() {
+  vaciarMatrices();
+  nominaRecalculada = null;
+  estadoArchivos = {};
+  renderTarjetasArchivos();
+  actualizarEstadoMini();
+  $('#resTrabajador').innerHTML = '';
+  $('#resEmpleador').innerHTML = '';
+  mostrar('cargar');
+  mensajeCarga('ok', '👋 Saliendo del programa. Matrices vaciadas. ¡Hasta pronto!');
+}
+
+// ---------- Eventos ----------------------------------------------------------------
+function iniciarEventos() {
+  $('#menu').addEventListener('click', e => {
+    const b = e.target.closest('.nav-btn');
+    if (b) mostrar(b.dataset.sec);
+  });
+
+  $('#btnCargar').addEventListener('click', () => cargarYMostrar(true));
+
+  // Fila del consolidado -> colilla del trabajador
+  $('#tablaConsolidado tbody').addEventListener('click', e => {
+    const tr = e.target.closest('tr[data-ced]');
+    if (!tr) return;
+    mostrar('trabajador');
+    $('#sec-trabajador input').value = tr.dataset.ced;
+    consultar('trabajador', tr.dataset.ced);
+  });
+  $('#tablaConsolidado tbody').addEventListener('keydown', e => { if (e.key === 'Enter') e.target.click(); });
+
+  $$('form.consulta').forEach(form => {
+    form.addEventListener('submit', e => { e.preventDefault(); consultar(form.dataset.destino, $('input', form).value); });
+    $('[data-imprimir]', form).addEventListener('click', () => window.print());
+  });
+
+  $('#selFila').addEventListener('change', renderVistaFila);
+  $('#tabsMatrices').addEventListener('click', e => {
+    const b = e.target.closest('[data-matriz]');
+    if (!b) return;
+    tabMatriz = b.dataset.matriz;
+    renderTabsMatrices();
+    renderMatrizCompleta();
+  });
+
+  $('#btnRecalcular').addEventListener('click', ejecutarValidacion);
+  $('#btnDescargar').addEventListener('click', descargarMatrizNomina);
+  $('#selEmpPrueba').addEventListener('change', renderPrueba);
+  $('#horasPrueba').addEventListener('input', renderPrueba);
+  $('#btnRestablecerHoras').addEventListener('click', restablecerHorasPrueba);
+  $('#btnSalir').addEventListener('click', salir);
+}
+
+// ---------- Arranque (equivale al inicio de main(): cargarArchivos()) ----------------
+document.addEventListener('DOMContentLoaded', () => {
+  iniciarEventos();
+  renderTarjetasArchivos();
+  actualizarEstadoMini();
+  mostrar('cargar');
+  cargarYMostrar(false);   // como main() del .c: carga al iniciar, sin mensaje
+});
+
+</script>
+</body>
+</html>
