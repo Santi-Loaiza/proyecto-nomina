@@ -9,23 +9,28 @@
  * styles.css — Sistema de Nómina con Matrices Paralelas
  * ========================================================================== */
 :root {
-  --navy: #0f172a;
-  --navy-2: #1e293b;
-  --accent: #2563eb;
-  --accent-soft: #dbeafe;
-  --violet: #7c3aed;
-  --violet-soft: #ede9fe;
+  --color-1: #F6E2B3;
+  --color-2: #E7A84E;
+  --color-3: #D96C2C;
+  --color-4: #3E8E7E;
+  --color-5: #274C56;
+  --navy: var(--color-5);
+  --navy-2: var(--color-4);
+  --accent: var(--color-4);
+  --accent-soft: #e8f1ed;
+  --violet: var(--color-3);
+  --violet-soft: #fee5b9;
   --green: #15803d;
   --green-soft: #dcfce7;
   --red: #b91c1c;
   --red-soft: #fee2e2;
-  --amber: #b45309;
+  --amber: #9a501f;
   --amber-soft: #fef3c7;
-  --bg: #f1f5f9;
+  --bg: #f7f5ef;
   --card: #ffffff;
-  --border: #e2e8f0;
-  --text: #1e293b;
-  --muted: #64748b;
+  --border: #dad2ba;
+  --text: var(--color-5);
+  --muted: #586e70;
   --radius: 12px;
 }
 
@@ -42,39 +47,52 @@ code { font-family: 'Consolas', 'Courier New', monospace; font-size: .88em; back
 [hidden] { display: none !important; }
 
 /* ---------- Estructura ---------- */
-.app { display: grid; grid-template-columns: 270px 1fr; min-height: 100vh; }
+.app { display: grid; grid-template-columns: 292px 1fr; min-height: 100vh; }
 .sidebar {
-  background: var(--navy);
-  color: #cbd5e1;
-  padding: 20px 14px;
+  background: var(--color-5);
+  color: #f9f2e3;
+  padding: 22px 16px;
   position: sticky; top: 0; height: 100vh;
-  display: flex; flex-direction: column; gap: 14px;
+  display: flex; flex-direction: column; gap: 16px;
   overflow-y: auto;
+  border-right: 1px solid rgba(246,226,179,.18);
+  box-shadow: 4px 0 18px rgba(39,76,86,.12);
 }
 .main { padding: 28px 32px 48px; min-width: 0; }
 
-.brand { display: flex; gap: 12px; align-items: center; padding: 0 6px 14px; border-bottom: 1px solid #243047; }
-.brand strong { color: #fff; display: block; font-size: 1rem; }
-.brand small { color: #94a3b8; font-size: .75rem; }
-.brand-mark { width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, var(--accent), var(--violet)); color: #fff; font-weight: 700; display: grid; place-items: center; font-size: 1.1rem; }
+.brand { display: flex; gap: 12px; align-items: center; padding: 0 4px 16px; border-bottom: 1px solid rgba(246,226,179,.2); }
+.brand-copy { min-width: 0; }
+.brand strong { color: #fffaf0; display: block; font-size: 1rem; }
+.brand small { color: #d7d2c3; display: block; margin-top: 3px; font-size: .78rem; }
+.brand-mark { width: 42px; height: 42px; flex: none; border: 1px solid rgba(246,226,179,.42); border-radius: 12px; background: var(--color-2); color: var(--color-5); font-weight: 800; display: grid; place-items: center; font-size: .95rem; }
+
+.team-card { display: flex; flex-direction: column; gap: 9px; padding: 12px; border: 1px solid rgba(246,226,179,.22); border-radius: 12px; background: rgba(255,255,255,.06); }
+.team-title { color: var(--color-2); font-size: .68rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.team-list { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; color: #fffaf0; font-size: .78rem; line-height: 1.35; }
+.team-director { display: flex; flex-direction: column; gap: 2px; padding-top: 8px; border-top: 1px solid rgba(246,226,179,.2); }
+.team-director span { color: #d7d2c3; font-size: .7rem; }
+.team-director strong { color: #fffaf0; font-size: .78rem; letter-spacing: .02em; }
 
 .nav-btn {
   width: 100%; display: flex; align-items: center; gap: 12px;
-  background: transparent; border: 0; color: inherit; text-align: left;
-  padding: 10px 10px; border-radius: 8px; font: inherit; font-size: .92rem; cursor: pointer;
+  min-height: 44px; background: transparent; border: 1px solid transparent; color: #f3ead4; text-align: left;
+  padding: 8px 10px; border-radius: 10px; font: inherit; font-size: .88rem; cursor: pointer;
+  transition: background .18s ease, color .18s ease, border-color .18s ease, transform .18s ease;
 }
-.nav-btn .n { width: 26px; height: 26px; flex: none; border-radius: 7px; background: #1e293b; display: grid; place-items: center; font-size: .8rem; font-weight: 600; color: #93c5fd; }
-.nav-btn:hover { background: #1a2540; color: #fff; }
-.nav-btn:focus-visible { outline: 2px solid #60a5fa; outline-offset: 1px; }
-.nav-btn.activo { background: var(--accent); color: #fff; }
-.nav-btn.activo .n { background: rgba(255,255,255,.2); color: #fff; }
-.nav-btn.salir .n { color: #fca5a5; }
-.nav-sep { font-size: .68rem; text-transform: uppercase; letter-spacing: .08em; color: #64748b; padding: 12px 10px 4px; min-height: 8px; }
+.nav-btn .n { width: 28px; height: 28px; flex: none; border-radius: 8px; background: rgba(62,142,126,.25); display: grid; place-items: center; font-size: .78rem; font-weight: 700; color: #d5eee4; }
+.nav-btn:hover { background: rgba(62,142,126,.28); border-color: rgba(62,142,126,.42); color: #fff; transform: translateX(2px); }
+.nav-btn:focus-visible { outline: 2px solid var(--color-2); outline-offset: 2px; }
+.nav-btn.activo { background: var(--color-2); border-color: rgba(246,226,179,.55); border-left: 3px solid var(--color-3); color: var(--color-5); box-shadow: 0 3px 10px rgba(0,0,0,.14); }
+.nav-btn.activo .n { background: rgba(39,76,86,.14); color: var(--color-5); }
+.nav-btn.salir { color: #f3c9b8; }
+.nav-btn.salir .n { color: #ffd3bd; background: rgba(217,108,44,.22); }
+.nav-btn.salir:hover { background: rgba(217,108,44,.22); border-color: rgba(217,108,44,.38); color: #fff6ed; }
+.nav-sep { font-size: .66rem; font-weight: 700; text-transform: uppercase; letter-spacing: .11em; color: #c4ddd5; padding: 8px 10px 4px; }
 
 .sidebar-foot { margin-top: auto; }
-.estado-mini { display: block; font-size: .8rem; padding: 8px 10px; border-radius: 8px; background: #1e293b; }
-.estado-mini.con-datos { color: #86efac; }
-.estado-mini.sin-datos { color: #fcd34d; }
+.estado-mini { display: block; font-size: .78rem; padding: 9px 11px; border: 1px solid rgba(246,226,179,.24); border-radius: 9px; background: rgba(255,255,255,.07); }
+.estado-mini.con-datos { color: #176b3a; background: #edf7ef; }
+.estado-mini.sin-datos { color: #8a5a13; background: #fbf3e4; }
 
 /* ---------- Encabezados ---------- */
 .sec-head { margin-bottom: 18px; }
@@ -202,7 +220,7 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 @media (max-width: 900px) {
   .app { grid-template-columns: 1fr; }
   .sidebar { position: static; height: auto; flex-direction: column; }
-  #menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 4px; }
+  #menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 6px; }
   .nav-sep { grid-column: 1 / -1; }
   .main { padding: 20px 14px 40px; }
 }
@@ -225,24 +243,38 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
   <!-- ================= MENÚ LATERAL (equivale a mostrarMenu() del .c) ================= -->
   <aside class="sidebar no-print">
     <div class="brand">
-      <span class="brand-mark">N</span>
-      <div>
+      <span class="brand-mark">SN</span>
+      <div class="brand-copy">
         <strong>Sistema de Nómina</strong>
-        <small>Matrices paralelas · 50 empleados</small>
+        <small>Gestión de nómina · ITM 2026-2</small>
       </div>
     </div>
 
+    <section class="team-card" aria-label="Equipo del proyecto">
+      <span class="team-title">Integrantes del equipo</span>
+      <ul class="team-list">
+        <li>Santiago Loaiza Madrid</li>
+        <li>Johan Tuberquia David</li>
+        <li>Wilmar Earles Mosquera Mosquera</li>
+      </ul>
+      <div class="team-director">
+        <span>Director</span>
+        <strong>ALEXANDER ARIAS</strong>
+      </div>
+    </section>
+
     <nav id="menu" aria-label="Menú principal">
+      <div class="nav-sep">Nómina</div>
       <button class="nav-btn" data-sec="cargar"><span class="n">1</span>Cargar archivos .txt</button>
       <button class="nav-btn" data-sec="consolidado"><span class="n">2</span>Reporte consolidado</button>
       <button class="nav-btn" data-sec="trabajador"><span class="n">3</span>Colilla del trabajador</button>
       <button class="nav-btn" data-sec="empleador"><span class="n">4</span>Costos del empleador</button>
       <button class="nav-btn" data-sec="apellidos"><span class="n">5</span>Filtro 1 · Apellidos</button>
       <button class="nav-btn" data-sec="salario"><span class="n">6</span>Filtro 2 · Salario</button>
-      <div class="nav-sep">Herramientas del proyecto</div>
+      <div class="nav-sep">Herramientas</div>
       <button class="nav-btn" data-sec="matrices"><span class="n">▦</span>Ver las 4 matrices</button>
       <button class="nav-btn" data-sec="calculo"><span class="n">✓</span>Cálculo y validación</button>
-      <div class="nav-sep"></div>
+      <div class="nav-sep">Sesión</div>
       <button class="nav-btn salir" data-sec="salir"><span class="n">7</span>Salir</button>
     </nav>
 
