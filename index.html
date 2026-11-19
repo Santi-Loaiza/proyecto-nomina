@@ -330,7 +330,7 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
         <p>Consulta por cédula (búsqueda lineal sobre <code>Matriz_ID[i][0]</code>).</p>
       </header>
       <form class="consulta no-print" data-destino="trabajador" autocomplete="off">
-        <input type="text" inputmode="numeric" list="listaCedulas" placeholder="Cédula, p. ej. 1000224922" aria-label="Cédula a consultar">
+        <input type="text" inputmode="numeric" list="listaCedulas" placeholder="Cédula, p. ej. 1078002358" aria-label="Cédula a consultar">
         <button class="btn primario" type="submit">Consultar</button>
         <button class="btn secundario" type="button" data-imprimir>Imprimir</button>
       </form>
@@ -344,7 +344,7 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
         <p>Aportes de seguridad social y parafiscales a cargo del empleador.</p>
       </header>
       <form class="consulta no-print" data-destino="empleador" autocomplete="off">
-        <input type="text" inputmode="numeric" list="listaCedulas" placeholder="Cédula, p. ej. 1000224922" aria-label="Cédula a consultar">
+        <input type="text" inputmode="numeric" list="listaCedulas" placeholder="Cédula, p. ej. 1078002358" aria-label="Cédula a consultar">
         <button class="btn primario" type="submit">Consultar</button>
         <button class="btn secundario" type="button" data-imprimir>Imprimir</button>
       </form>
@@ -500,9 +500,9 @@ const ARCHIVOS = [
 // ---- Contenido de los 4 archivos .txt, incluido en el programa --------------
 // La carga NO lee archivos nuevos: siempre usa estos datos fijos.
 const DATOS_TXT = {
-  id: `1000224922 11 4 1995 1 1
-1000674770 13 4 1975 6 4
-1000401720 6 12 1988 4 1
+  id: `1078002358 11 4 1995 1 1
+1017931559 13 4 1975 6 4
+1033180121 6 12 1988 4 1
 1000473234 12 1 1992 1 2
 1000579282 4 12 1986 10 5
 1000195213 7 3 1987 10 2
@@ -599,7 +599,7 @@ Diana          Yasira         Mosquera       Rivas
 Sofia          Elizabeth      Martinez       Caro
 Maria          Lorena         Conrado        Ramirez
 Jose           Alberto        Muriel         Muñoz
-Juan           Pablo          Castañeda      Londoño`,
+Maria          Isabel         David          -`,
   horas: `6 4 5 8 0
 6 0 5 0 0
 2 2 0 0 0

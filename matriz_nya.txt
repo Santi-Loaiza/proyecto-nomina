@@ -47,4 +47,4 @@ Diana          Yasira         Mosquera       Rivas
 Sofia          Elizabeth      Martinez       Caro
 Maria          Lorena         Conrado        Ramirez
 Jose           Alberto        Muriel         Muñoz
-Juan           Pablo          Castañeda      Londoño
+Maria          Isabel         David          -
