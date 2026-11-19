@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistema de Nómina con Matrices Paralelas — ITM 2026-2</title>
+  <title>Sistema de Nómina en Colombia - BETA — ITM 2026-2</title>
   <style>
 /* ============================================================================
- * styles.css — Sistema de Nómina con Matrices Paralelas
+ * styles.css — Sistema de Nómina en Colombia
  * ========================================================================== */
 :root {
   --color-1: #F6E2B3;
@@ -297,10 +297,11 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 
       <div class="card">
         <h3>Carga de las matrices</h3>
-        <p class="nota">Los datos de los 50 empleados ya vienen incluidos en el programa (son los mismos de los cuatro archivos <code>.txt</code>). Este botón los pasa a las 4 matrices y confirma la carga.</p>
+        <p class="nota">El programa lee los archivos <code>matriz_id.txt</code>, <code>matriz_nya.txt</code>, <code>matriz_horas.txt</code> y <code>matriz_nomina.txt</code> que están en la misma carpeta que esta página. Si cambia un archivo, pulse "Cargar / recargar" para leerlo de nuevo.</p>
         <div class="acciones">
           <button id="btnCargar" class="btn primario">Cargar / recargar las 4 matrices</button>
         </div>
+        <p id="ayudaLocal" class="nota" hidden>La página está abierta con doble clic (<code>file://</code>) y el navegador bloquea la lectura de los <code>.txt</code>. Ábrala desde GitHub Pages o con un servidor local en la carpeta del proyecto (<code>python3 -m http.server</code> y luego <code>http://localhost:8000</code>).</p>
         <div id="mensajesCarga" class="mensajes" role="status"></div>
       </div>
     </section>
@@ -497,211 +498,6 @@ const ARCHIVOS = [
   { clave: 'nomina', archivo: 'matriz_nomina.txt', columnas: 12, tipo: 'numero', titulo: 'Matriz_Nomina', etiquetas: ['Horas extras', 'Aux. transp.', 'Bruto', 'Salud trab.', 'Pensión trab.', 'Tot. deduc.', 'Neto', 'Pensión emp.', 'Salud emp.', 'ARL', 'Caja comp.', 'Costo empresa'] }
 ];
 
-// ---- Contenido de los 4 archivos .txt, incluido en el programa --------------
-// La carga NO lee archivos nuevos: siempre usa estos datos fijos.
-const DATOS_TXT = {
-  id: `1078002358 11 4 1995 1 1
-1017931559 13 4 1975 6 4
-1033180121 6 12 1988 4 1
-1000473234 12 1 1992 1 2
-1000579282 4 12 1986 10 5
-1000195213 7 3 1987 10 2
-1000650109 7 7 1990 1 4
-1000957184 9 9 2001 10 2
-1000990858 25 7 1987 6 1
-1000422064 11 5 1998 10 5
-1000134385 5 11 1995 7 3
-1000826695 26 6 1997 2 2
-1000951825 27 5 1993 7 4
-1000780899 18 3 1995 3 1
-1000100938 8 10 1998 7 4
-1000381423 9 1 1992 7 1
-1000855523 12 1 1981 1 1
-1000538483 18 11 1983 7 4
-1000645756 7 12 1997 2 4
-1000470173 2 9 1975 8 1
-1000621910 6 3 1980 8 5
-1000452148 31 12 1985 7 3
-1000779715 9 12 2001 3 3
-1000244707 24 7 2001 10 1
-1000501883 22 10 1985 10 4
-1000285931 12 12 1981 3 2
-1000342143 9 7 1979 10 5
-1000987654 21 10 1988 8 1
-1000887848 18 6 1979 3 4
-1000919275 20 12 1983 4 4
-1000428803 30 9 1984 6 1
-1000114107 22 8 1999 4 5
-1000198952 7 8 1980 10 2
-1000431540 24 2 1982 7 5
-1000406524 18 7 1988 4 4
-1000905933 10 8 2004 9 2
-1000218161 13 3 1984 9 5
-1000545320 25 12 1994 10 3
-1000292117 6 6 1985 7 1
-1000117679 21 3 1987 2 5
-1000679340 6 2 1987 4 1
-1000981630 23 8 1989 7 2
-1000477072 23 1 1975 9 2
-1000579054 27 9 1977 6 1
-1000105035 20 7 1980 2 1
-1000866151 14 12 1999 5 1
-1000146576 24 7 1997 3 5
-1000508222 17 6 1979 10 3
-1000667460 3 11 1996 3 1
-1000951589 23 6 1995 2 2`,
-  nya: `Wilmar         Earles         Mosquera       Mosquera
-Johan          -              Tuberquia      David
-Santiago       -              Loaiza         Madrid
-Alexander      -              Arias          Londoño
-Juan           Carlos         Caro           Muriel
-Mariana        Ximena         Osorio         Soto
-Maria          Alejandra      Zúñiga         López
-Ana            Sofia          Vanegas        López
-Juan           Jose           Loaiza         Madrid
-Diana          Fernanda       Madrid         Builes
-William        -              Loaiza         Puerta
-Maria          Nora           Builes         Acevedo
-Fernando       Augusto        Ramírez        Londoño
-Maria          Fernanda       Londoño        López
-Dulce          Sarai          Zapata         Núñez
-Arelis         -              David          Higuita
-Sonia          -              David          Higuita
-Nicole         Sofia          Velasquez      Tuberquia
-Edwin          Alexander      Tuberquia      -
-Ruben          -              David          Higuita
-Neida          -              David          Higuita
-Noelma         -              David          Higuita
-Gloria         -              Tuberquia      -
-Diana          Yaned          David          Higuita
-Gonzalo        -              Tuberquia      David
-Yeison         -              David          -
-Yaned          -              Tuberquia      -
-Gloria         -              Velásquez      Tuberquia
-Gabriel        -              Velasquez      Tuberquia
-Alejandro      Fernando       Munoz          Silva
-Marliry        -              Mosquera       Palacios
-Wilmar         Anilio         Mosquera       Perea
-Yaqueline      -              Rivas          Perea
-Shirley        -              Quejada        Mena
-Dominic        -              Esquivel       Mosquera
-Ailen          Ivana          Mosquera       Cordoba
-Liz            Dahian         Mosquera       Cordoba
-Darley         -              Mosquera       Perea
-Dilan          -              Mosquera       Cordoba
-Miriam         -              Perea          Palacios
-Dahy           -              Mosquera       Perea
-Juan           David          Palacios       Romana
-Tatiana        -              Mosquera       Palacios
-Narlin         -              Mosquera       Palacios
-Jeiner         -              Mosquera       Mosquera
-Diana          Yasira         Mosquera       Rivas
-Sofia          Elizabeth      Martinez       Caro
-Maria          Lorena         Conrado        Ramirez
-Jose           Alberto        Muriel         Muñoz
-Maria          Isabel         David          -`,
-  horas: `6 4 5 8 0
-6 0 5 0 0
-2 2 0 0 0
-2 2 8 8 0
-6 0 5 4 0
-0 2 8 8 0
-2 4 5 8 0
-0 0 5 0 0
-6 0 0 8 0
-0 0 8 0 0
-2 4 8 4 0
-4 4 5 4 0
-4 2 5 0 0
-4 2 0 8 0
-6 0 0 0 0
-4 0 8 0 0
-6 2 8 4 0
-6 4 0 4 0
-4 4 8 0 0
-0 0 8 0 0
-0 2 0 8 0
-0 4 0 4 0
-2 0 8 8 0
-0 2 5 4 0
-0 0 8 0 0
-4 0 0 4 0
-6 2 5 4 0
-2 0 0 8 0
-2 4 8 4 0
-4 0 5 8 0
-0 2 8 0 0
-2 4 0 8 0
-2 0 5 4 0
-0 4 8 0 0
-6 2 0 0 0
-4 2 8 0 0
-6 2 8 8 0
-0 2 0 4 0
-6 0 0 8 0
-0 0 5 4 0
-6 0 5 0 0
-0 0 5 8 0
-0 0 5 0 0
-2 0 8 8 0
-6 4 5 4 0
-2 2 5 0 0
-6 2 0 0 0
-6 4 8 8 0
-6 0 5 0 0
-6 2 0 4 0`,
-  nomina: `134375.00 162000.00 1296375.00 45375.00 45375.00 90750.00 1205625.00 136125.00 96421.88 5921.44 45375.00 1580218.31
-231250.00 0.00 6231250.00 249250.00 249250.00 498500.00 5732750.00 747750.00 529656.25 271059.38 249250.00 8028965.62
-100000.00 0.00 4100000.00 164000.00 164000.00 328000.00 3772000.00 492000.00 348500.00 21402.00 164000.00 5125902.00
-103333.33 162000.00 1265333.33 44133.33 44133.33 88266.67 1177066.67 132400.00 93783.33 11518.80 44133.33 1547168.80
-718750.00 0.00 10718750.00 428750.00 428750.00 857500.00 9861250.00 1286250.00 911093.75 746025.00 428750.00 14090868.75
-929166.67 0.00 10929166.67 437166.67 437166.67 874333.33 10054833.33 1311500.00 928979.17 114100.50 437166.67 13720913.00
-113541.67 162000.00 1275541.67 44541.67 44541.67 89083.33 1186458.33 133625.00 94651.04 48439.06 44541.67 1596798.44
-72916.67 0.00 10072916.67 402916.67 402916.67 805833.33 9267083.33 1208750.00 856197.92 105161.25 402916.67 12645942.50
-587500.00 0.00 6587500.00 263500.00 263500.00 527000.00 6060500.00 790500.00 559937.50 34386.75 263500.00 8235824.25
-116666.67 0.00 10116666.67 404666.67 404666.67 809333.33 9307333.33 1214000.00 859916.67 704120.00 404666.67 13299370.00
-592083.33 0.00 7592083.33 303683.33 303683.33 607366.67 6984716.67 911050.00 645327.08 184943.15 303683.33 9637086.90
-181250.00 162000.00 2343250.00 87250.00 87250.00 174500.00 2168750.00 261750.00 185406.25 22772.25 87250.00 2900428.50
-298958.33 0.00 7298958.33 291958.33 291958.33 583916.67 6715041.67 875875.00 620411.46 317504.69 291958.33 9404707.81
-306250.00 0.00 3306250.00 132250.00 132250.00 264500.00 3041750.00 396750.00 281031.25 17258.62 132250.00 4133539.88
-218750.00 0.00 7218750.00 288750.00 288750.00 577500.00 6641250.00 866250.00 613593.75 314015.62 288750.00 9301359.38
-227500.00 0.00 7227500.00 289100.00 289100.00 578200.00 6649300.00 867300.00 614337.50 37727.55 289100.00 9035965.05
-90833.33 162000.00 1252833.33 43633.33 43633.33 87266.67 1165566.67 130900.00 92720.83 5694.15 43633.33 1525781.65
-656250.00 0.00 7656250.00 306250.00 306250.00 612500.00 7043750.00 918750.00 650781.25 333046.88 306250.00 9865078.12
-123333.33 162000.00 2285333.33 84933.33 84933.33 169866.67 2115466.67 254800.00 180483.33 92365.00 84933.33 2897915.00
-93333.33 0.00 8093333.33 323733.33 323733.33 647466.67 7445866.67 971200.00 687933.33 42247.20 323733.33 10118447.20
-650000.00 0.00 8650000.00 346000.00 346000.00 692000.00 7958000.00 1038000.00 735250.00 602040.00 346000.00 11371290.00
-437500.00 0.00 7437500.00 297500.00 297500.00 595000.00 6842500.00 892500.00 632187.50 181177.50 297500.00 9440865.00
-266250.00 0.00 3266250.00 130650.00 130650.00 261300.00 3004950.00 391950.00 277631.25 79565.85 130650.00 4146047.10
-552083.33 0.00 10552083.33 422083.33 422083.33 844166.67 9707916.67 1266250.00 896927.08 55081.88 422083.33 13192425.63
-116666.67 0.00 10116666.67 404666.67 404666.67 809333.33 9307333.33 1214000.00 859916.67 440075.00 404666.67 13035325.00
-162500.00 0.00 3162500.00 126500.00 126500.00 253000.00 2909500.00 379500.00 268812.50 33016.50 126500.00 3970329.00
-864583.33 0.00 10864583.33 434583.33 434583.33 869166.67 9995416.67 1303750.00 923489.58 756175.00 434583.33 14282581.25
-616666.67 0.00 8616666.67 344666.67 344666.67 689333.33 7927333.33 1034000.00 732416.67 44979.00 344666.67 10772729.00
-253750.00 0.00 3253750.00 130150.00 130150.00 260300.00 2993450.00 390450.00 276568.75 141538.12 130150.00 4192456.88
-379166.67 0.00 4379166.67 175166.67 175166.67 350333.33 4028833.33 525500.00 372229.17 190493.75 175166.67 5642556.25
-157500.00 0.00 6157500.00 246300.00 246300.00 492600.00 5664900.00 738900.00 523387.50 32142.15 246300.00 7698229.65
-425000.00 0.00 4425000.00 177000.00 177000.00 354000.00 4071000.00 531000.00 376125.00 307980.00 177000.00 5817105.00
-510416.67 0.00 10510416.67 420416.67 420416.67 840833.33 9669583.33 1261250.00 893385.42 109728.75 420416.67 13195197.50
-285833.33 0.00 7285833.33 291433.33 291433.33 582866.67 6702966.67 874300.00 619295.83 507094.00 291433.33 9577956.50
-183333.33 0.00 4183333.33 167333.33 167333.33 334666.67 3848666.67 502000.00 355583.33 181975.00 167333.33 5390225.00
-423750.00 0.00 9423750.00 376950.00 376950.00 753900.00 8669850.00 1130850.00 801018.75 98383.95 376950.00 11830952.70
-1117500.00 0.00 10117500.00 404700.00 404700.00 809400.00 9308100.00 1214100.00 859987.50 704178.00 404700.00 13300465.50
-479166.67 0.00 10479166.67 419166.67 419166.67 838333.33 9640833.33 1257500.00 890729.17 255272.50 419166.67 13301835.00
-685416.67 0.00 7685416.67 307416.67 307416.67 614833.33 7070583.33 922250.00 653260.42 40117.88 307416.67 9608461.62
-81250.00 162000.00 2243250.00 83250.00 83250.00 166500.00 2076750.00 249750.00 176906.25 144855.00 83250.00 2898011.25
-154166.67 0.00 4154166.67 166166.67 166166.67 332333.33 3821833.33 498500.00 353104.17 21684.75 166166.67 5193622.25
-517708.33 0.00 7517708.33 300708.33 300708.33 601416.67 6916291.67 902125.00 639005.21 78484.88 300708.33 9438031.75
-65625.00 0.00 9065625.00 362625.00 362625.00 725250.00 8340375.00 1087875.00 770578.12 94645.12 362625.00 11381348.25
-532500.00 0.00 6532500.00 261300.00 261300.00 522600.00 6009900.00 783900.00 555262.50 34099.65 261300.00 8167062.15
-202083.33 162000.00 2364083.33 88083.33 88083.33 176166.67 2187916.67 264250.00 187177.08 11494.88 88083.33 2915088.63
-161458.33 0.00 5161458.33 206458.33 206458.33 412916.67 4748541.67 619375.00 438723.96 26942.81 206458.33 6452958.44
-137500.00 0.00 3137500.00 125500.00 125500.00 251000.00 2886500.00 376500.00 266687.50 218370.00 125500.00 4124557.50
-1387500.00 0.00 11387500.00 455500.00 455500.00 911000.00 10476500.00 1366500.00 967937.50 277399.50 455500.00 14454837.00
-115625.00 0.00 3115625.00 124625.00 124625.00 249250.00 2866375.00 373875.00 264828.12 16263.56 124625.00 3895216.69
-158333.33 162000.00 2320333.33 86333.33 86333.33 172666.67 2147666.67 259000.00 183458.33 22533.00 86333.33 2871658.00`
-};
-
 /**
  * Convierte el texto de un .txt en una matriz de N filas (equivale al fscanf).
  * Lanza Error con un mensaje claro si el archivo no tiene el formato esperado.
@@ -746,15 +542,16 @@ function hayDatos() {
 }
 
 /**
- * Llena las 4 matrices con los datos incluidos en el programa (DATOS_TXT).
- * Equivale a cargarArchivos() del .c. Devuelve { ok, detalle[] }.
+ * Convierte los 4 textos en matrices. Si alguno falla, no cambia ninguna (todo o nada).
+ * textos = { id: '...', nya: '...', horas: '...', nomina: '...' } (null si no se pudo leer).
  */
-function cargarMatrices() {
+function llenarMatrices(textos, errores) {
   const resultado = {};
   const detalle = [];
   for (const def of ARCHIVOS) {
     try {
-      resultado[def.clave] = parsearMatriz(DATOS_TXT[def.clave], def);
+      if (textos[def.clave] == null) throw new Error(errores[def.clave] || 'No se pudo leer el archivo');
+      resultado[def.clave] = parsearMatriz(textos[def.clave], def);
       detalle.push({ archivo: def.archivo, ok: true, filas: N });
     } catch (e) {
       detalle.push({ archivo: def.archivo, ok: false, error: e.message });
@@ -763,6 +560,25 @@ function cargarMatrices() {
   const ok = detalle.every(d => d.ok);
   if (ok) asignarMatrices(resultado);
   return { ok, detalle };
+}
+
+/**
+ * Lee los 4 archivos .txt de la misma carpeta que index.html.
+ * Equivale a cargarArchivos() del .c (fopen + fscanf). Devuelve { ok, detalle[] }.
+ */
+async function cargarMatrices() {
+  const textos = {}, errores = {};
+  for (const def of ARCHIVOS) {
+    try {
+      const resp = await fetch(def.archivo, { cache: 'no-store' });
+      if (!resp.ok) throw new Error(`no se encontró el archivo (HTTP ${resp.status})`);
+      textos[def.clave] = await resp.text();
+    } catch (e) {
+      textos[def.clave] = null;
+      errores[def.clave] = e.message.startsWith('no se encontró') ? e.message : 'el navegador no pudo leer el archivo';
+    }
+  }
+  return llenarMatrices(textos, errores);
 }
 
 /* ===== nomina.js ===== */
@@ -982,18 +798,25 @@ function renderTarjetasArchivos() {
  * Carga las matrices y actualiza la pantalla.
  * conMensaje = true cuando el usuario presiona el botón de la opción 1.
  */
-function cargarYMostrar(conMensaje) {
-  const res = cargarMatrices();
+/**
+ * Carga las matrices y actualiza la pantalla.
+ * conMensaje = true cuando el usuario pulsa "Cargar / recargar".
+ */
+async function cargarYMostrar(conMensaje) {
+  const res = await cargarMatrices();
   res.detalle.forEach((d, k) => { estadoArchivos[ARCHIVOS[k].clave] = d.ok ? { ok: true } : { ok: false, error: d.error }; });
   renderTarjetasArchivos();
   actualizarEstadoMini();
+  const local = !location.protocol.startsWith('http');   // abierta con doble clic, sin servidor
+  $('#ayudaLocal').hidden = res.ok || !local;
   if (!res.ok) {
     const errores = res.detalle.filter(d => !d.ok).map(d => `${d.archivo}: ${d.error}`);
-    $('#mensajesCarga').innerHTML = errores.map(e => `<div class="msg error">❌ ${esc(e)}</div>`).join('');
+    $('#mensajesCarga').innerHTML = errores.map(e => `<div class="msg error">❌ ${esc(e)}</div>`).join('') +
+      '<div class="msg warn">No se modificó ninguna matriz.</div>';
     return;
   }
   nominaRecalculada = null;
-  $('#mensajesCarga').innerHTML = conMensaje ? '<div class="msg ok">✅ Matrices cargadas exitosamente!</div>' : '';
+  $('#mensajesCarga').innerHTML = conMensaje ? '<div class="msg ok">✅ Matrices cargadas exitosamente desde los archivos .txt del proyecto!</div>' : '';
   renderTodo();
 }
 
@@ -1354,7 +1177,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderTarjetasArchivos();
   actualizarEstadoMini();
   mostrar('cargar');
-  cargarYMostrar(false);   // como main() del .c: carga al iniciar, sin mensaje
+  cargarYMostrar(false);   // como main() del .c: lee los .txt al iniciar, sin mensaje
 });
 
 </script>
